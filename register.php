@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wealth Wave - Registration</title>
+    <title>Registration</title>
     <link rel="stylesheet" href="./asset/toast/toastr.min.css">
+    <link rel="shortcut icon" href="./asset/image/logo.png" type="image/x-icon">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         function togglePassword() {
@@ -27,24 +28,30 @@
 <body>
     <div class="grid min-h-screen md:grid-cols-2">
         <!-- Left Column -->
-        <div class="relative hidden bg-zinc-900 p-8 text-white md:block">
-            <div class="space-y-20">
-                <p class="text-sm text-zinc-400">01/03</p>
+        <div class="relative hidden bg-[#FAAF15] p-8 text-white md:block">
+            <div class="space-y-15">
+                <p class="text-sm text-zinc-400"><img src="./asset/image/logo.png" class="w-24" alt=""></p>
                 
                 <div class="relative h-80">
                     <img 
-                        src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/login-PQ9NTOwXqSX6ceDhtdEnl2KQw2CTfq.webp"
+                        src="./asset/image/ads.png"
                         alt="Credit card preview"
                         class="object-contain w-full h-full"
                     />
                 </div>
 
-                <div class="space-y-4">
+                <div class="space-y-5">
                     <h1 class="text-5xl font-semibold tracking-tight">
-                        Create<br />Custom Cards
+                    Join JumandiGas –<br />Fast & Reliable Gas Delivery!
                     </h1>
-                    <p class="text-zinc-400">
-                        Design personalized cards that reflect your style and identity with our easy-to-use customization tools.
+                    <p class="text-black font-semibold leading-[60px]">
+                    Sign up now to enjoy seamless gas ordering and doorstep delivery. With JumandiGas, you get fast service, secure payments, and 24/7 support.
+                        <br/>
+                    🔹 Easy registration <br/>
+                    🔹 Quick gas refills  <br/>
+                    🔹 Safe & reliable delivery <br/>
+
+                    ✅ Create your account now and order with ease! 🚀
                     </p>
                 </div>
             </div>
@@ -56,13 +63,13 @@
                 <!-- Logo and Welcome -->
                 <div class="space-y-2">
                     <div class="flex items-center gap-2">
-                        <div class="h-8 w-8 rounded-full bg-blue-600 p-2">
-                            <span class="block text-center text-sm font-bold text-white">W</span>
+                        <div class="h-8 w-8 rounded-full bg-[#FAAF15] p-2">
+                            <span class="block text-center text-sm font-bold text-white"><img src="./asset/image/logo.png" alt=""></span>
                         </div>
-                        <h2 class="text-xl font-semibold">Wealth Wave</h2>
+                        <h2 class="text-xl font-semibold">Jumandigas</h2>
                     </div>
                     <h1 class="text-3xl font-semibold tracking-tight">
-                        Hi! Welcome to<br />Wealth Wave dude 👋
+                        Hi! Welcome to<br />Jumandigas 👋
                     </h1>
                 </div>
 
@@ -196,7 +203,7 @@
 
                     <button 
                         type="submit" 
-                        class="w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600/50"
+                        class="w-full rounded-md bg-[#FAAF15] px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600/50"
                     >
                         Sign up
                     </button>
@@ -206,7 +213,7 @@
                 <div class="space-y-4">
                     <div class="text-center text-sm">
                         Already have an account?
-                        <a href="/signin" class="font-semibold text-blue-600 hover:underline">
+                        <a href="/signin" class="font-semibold text-[#FAAF15] hover:underline">
                             Sign In
                         </a>
                     </div>

@@ -8,7 +8,8 @@ $userRole = $_SESSION['role'] ?? null; // Get user role if logged in
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>City Food Delivery</title>
+    <title>JumandiGas</title>
+    <link rel="shortcut icon" href="./asset/image/logo.png" type="image/x-icon">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -88,7 +89,7 @@ $userRole = $_SESSION['role'] ?? null; // Get user role if logged in
             <div class="space-y-6">
                 <div class="inline-flex items-center gap-2 bg-orange-100 px-4 py-2 rounded-full">
                     <span class="text-orange-600">Bike Delivery</span>
-                    <span class="text-xl">🚲</span>
+                    <span class="text-xl"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bike"><circle cx="18.5" cy="17.5" r="3.5"/><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="15" cy="5" r="1"/><path d="M12 17.5V14l-3-3 4-3 2 3h2"/></svg></span>
                 </div>
 
                 <h1 class="text-4xl md:text-5xl font-bold leading-tight">
@@ -97,7 +98,7 @@ $userRole = $_SESSION['role'] ?? null; // Get user role if logged in
                 </h1>
 
                 <p class="text-gray-600 max-w-md">
-                    Grocen atssures fresh grocery every morning to your family without getting out in this pandemic.
+                At JumandiGas, we bring you a seamless and stress-free way to order and receive cooking gas at your doorstep. No more unexpected gas shortages or long refill queues—just a fast, safe, and convenient delivery service that keeps your kitchen running.
                 </p>
 
                 <div class="flex items-center gap-4">
