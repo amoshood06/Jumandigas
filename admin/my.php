@@ -1,3 +1,7 @@
+<?php
+require_once "auth_admin.php";
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -43,6 +47,7 @@
                     <li><a href="#" class="block py-2 px-4 rounded hover:bg-orange-700">Customers</a></li>
                     <li><a href="#" class="block py-2 px-4 rounded hover:bg-orange-700">Location</a></li>
                     <li><a href="#" class="block py-2 px-4 rounded hover:bg-orange-700">Settings</a></li>
+                    <li><a href="logout.php" class="block py-2 px-4 rounded hover:bg-orange-700">Login</a></li>
                 </ul>
             </nav>
         </aside>

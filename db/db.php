@@ -16,7 +16,7 @@ try {
     $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
     
     // Uncomment to test the connection
-    // echo "Connected successfully!";
+     echo "Connected successfully!";
 } catch (PDOException $e) {
     // Display an error message
     die("Database connection failed: " . $e->getMessage());
