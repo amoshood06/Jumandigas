@@ -3,21 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="../asset/toast/toastr.min.css">
     <title>Admin Login</title>
 </head>
-<body>
+<body class="bg-black w-full flex items-center justify-center">
 
+<div class="bg-white rounded-[20px]">
+    <form action="process_admin_register.php" id="loginForm" class="flex flex-col">
+            <div class="mb-5">
+            <label>Email:</label>
+            <input type="email" name="email" required>
+            </div>
 
-    <form action="process_admin_register.php" id="loginForm">
-        <label>Email:</label>
-        <input type="email" name="email" required>
+            <label>Password:</label>
+            <input type="password" name="password" required>
 
-        <label>Password:</label>
-        <input type="password" name="password" required>
-
-        <button type="submit">Login</button>
-    </form>
+            <button type="submit">Login</button>
+        </form>
+</div>
+    
 
     <script src="../asset/toast/jquery-3.7.1.min.js"></script>
     <script src="../asset/toast/toastr.min.js"></script>

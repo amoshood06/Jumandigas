@@ -1,5 +1,30 @@
 <?php
 require_once "auth_admin.php";
+include "../db/db.php"; // Include PDO connection
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $gas_name = $_POST['gas_name'];
+    $gas_kg = $_POST['gas_kg'];
+    $price_per_kg = $_POST['price_per_kg'];
+
+    // Upload Image
+    $target_dir = "uploads/";
+    $image = $target_dir . basename($_FILES["image"]["name"]);
+    move_uploaded_file($_FILES["image"]["tmp_name"], $image);
+
+    // Insert Data using PDO
+    $stmt = $pdo->prepare("INSERT INTO gas_products (gas_name, gas_kg, price_per_kg, image) 
+                           VALUES (:gas_name, :gas_kg, :price_per_kg, :image)");
+    $stmt->execute([
+        ':gas_name' => $gas_name,
+        ':gas_kg' => $gas_kg,
+        ':price_per_kg' => $price_per_kg,
+        ':image' => $image
+    ]);
+
+    echo "Gas product uploaded successfully!";
+}
+
 ?>
 
 <!DOCTYPE html>

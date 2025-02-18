@@ -137,7 +137,7 @@ $userRole = $_SESSION['role'] ?? null; // Get user role if logged in
                     <h3 class="font-semibold">Gas - 1kg</h3>
                     <p class="text-sm text-gray-500">Refill</p>
                     <div class="flex items-center justify-between mt-2">
-                        <span class="font-semibold">₦2500.25</span>
+                        <span class="font-semibold">View</span>
                         <div class="flex gap-2">
                             <button class="p-2 bg-gray-900 text-white rounded-full">
                                 <i data-lucide="arrow-right" class="w-4 h-4"></i>
@@ -155,7 +155,7 @@ $userRole = $_SESSION['role'] ?? null; // Get user role if logged in
                     <h3 class="font-semibold">Gas - 2kg</h3>
                     <p class="text-sm text-gray-500">Refill</p>
                     <div class="flex items-center justify-between mt-2">
-                        <span class="font-semibold">₦3500.10</span>
+                        <span class="font-semibold">View</span>
                         <div class="flex gap-2">
                             <button class="p-2 bg-gray-900 text-white rounded-full">
                                 <i data-lucide="arrow-right" class="w-4 h-4"></i>
