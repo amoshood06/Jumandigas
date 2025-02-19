@@ -1,10 +1,31 @@
 <?php
+// Start the session before any output
+// Include authentication check
 require_once "../auth_check.php";
+
+// Check if the user is logged in and their role is 'user'
 if ($_SESSION['role'] != 'user') {
     header("Location: ../login.php");
     exit();
 }
+
+function isLoggedIn() {
+    // Check if the session has the user_id set (user is logged in)
+    return isset($_SESSION['user_id']);
+}
+
+function getUserLocation() {
+    // Assuming user country and state are stored in session after login
+    if (isset($_SESSION['country']) && isset($_SESSION['state'])) {
+        return [
+            'country' => $_SESSION['country'],
+            'state' => $_SESSION['state']
+        ];
+    }
+    return null; // Return null if location information is not available
+}
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -70,7 +91,7 @@ if ($_SESSION['role'] != 'user') {
                             <a href="#" class="block p-3 bg-[#ff6b00] text-white rounded-lg">Home</a>
                             <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Deposit</a>
                             <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Buy Cylinder</a>
-                            <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Order Gas</a>
+                            <a href="order-page.php" class="block p-3 hover:bg-orange-100 rounded-lg">Order Gas</a>
                             <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Complain</a>
                             <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Setting</a>
                         </nav>

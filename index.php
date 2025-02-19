@@ -1,8 +1,8 @@
 <?php
 session_start();
- require './db/db.php';
 $userRole = $_SESSION['role'] ?? null; // Get user role if logged in
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>

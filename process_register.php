@@ -1,27 +1,35 @@
-<?php
+<?php 
 session_start();
 require_once "./db/db.php"; 
 
 header('Content-Type: application/json');
-
-// Check if user is logged in
-if (!isset($_SESSION['user_role'])) {
-    echo json_encode(["status" => "error", "message" => "You must be logged in to register!"]);
+// Check if session is stcountryarted and if user is logged in
+if (isset($_SESSION['user_role'])) {
+    echo json_encode(["status" => "error", "message" => "You are already logged in and cannot register!"]);
     exit();
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Sanitize and validate input
     $full_name = trim($_POST['full_name']);
-    $email = trim($_POST['email']);
+    $email = filter_var(trim($_POST['email']), FILTER_SANITIZE_EMAIL);
     $phone = trim($_POST['phone']);
     $password = trim($_POST['password']);
     $address = trim($_POST['address']);
+    $country = trim($_POST['country']);
     $state = trim($_POST['state']);
-    $location = trim($_POST['location']);
+    $city = trim($_POST['city']);
     $role = trim($_POST['role']);
+    $currency = trim($_POST['currency']);
+
+    // Validate email
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        echo json_encode(["status" => "error", "message" => "Invalid email format!"]);
+        exit();
+    }
 
     // Prevent users from registering as admin
-    if ($role == 'admin' && $_SESSION['user_role'] !== 'admin') {
+    if ($role == 'admin' && (empty($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin')) {
         echo json_encode(["status" => "error", "message" => "You cannot register as an admin directly!"]);
         exit();
     }
@@ -39,11 +47,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Hash password
     $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
 
-    // Insert user data
-    $stmt = $pdo->prepare("INSERT INTO users (full_name, email, phone, password, address, state, location, role) 
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-    $inserted = $stmt->execute([$full_name, $email, $phone, $hashedPassword, $address, $state, $location, $role]);
-
+    // Insert user data, including currency
+    $stmt = $pdo->prepare("INSERT INTO users (full_name, email, phone, password, address, country, state, city, role, currency) 
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $inserted = $stmt->execute([$full_name, $email, $phone, $hashedPassword, $address, $country, $state, $city, $role, $currency]);
+    
     if ($inserted) {
         // Redirect user to the correct dashboard based on role
         $redirectPage = match ($role) {

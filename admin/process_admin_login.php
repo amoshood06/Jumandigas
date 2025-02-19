@@ -16,7 +16,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $_SESSION['user_id'] = $admin['id'];
         $_SESSION['role'] = $admin['role'];
 
-        echo json_encode(["status" => "success", "message" => "Login successful!", "redirect" => "admin/index.php"]);
+        echo json_encode(["status" => "success", "message" => "Login successful!", "redirect" => "index.php"]);
         exit();
     } else {
         echo json_encode(["status" => "error", "message" => "Invalid credentials!"]);

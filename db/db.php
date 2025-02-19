@@ -1,9 +1,9 @@
 <?php
 // Database credentials
-$host = ""; // Change to your database host
-$dbname = "jumandigas-35303839db50"; // Change to your database name
-$username = "jumandigas-35303839db50"; // Change to your database username
-$password = "qa7madglb8"; // Change to your database password
+$host = "localhost"; // Change to your database host
+$dbname = "jumandigas"; // Change to your database name
+$username = "root"; // Change to your database username
+$password = ""; // Change to your database password
 
 try {
     // Create a new PDO connection
@@ -16,7 +16,7 @@ try {
     $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
     
     // Uncomment to test the connection
-    // echo "Connected successfully!";
+     //echo "Connected successfully!";
 } catch (PDOException $e) {
     // Display an error message
     die("Database connection failed: " . $e->getMessage());

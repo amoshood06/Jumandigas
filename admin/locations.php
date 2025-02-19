@@ -1,3 +1,6 @@
+<?php
+require_once "auth_admin.php";  // Admin authentication check
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,26 +8,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jumandi Gas Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../asset/toast/toastr.min.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    <style>
-        /* Mobile Sidebar */
-        .sidebar {
-            transform: translateX(-100%);
-            transition: transform 0.3s ease-in-out;
-        }
-        .sidebar.open {
-            transform: translateX(0);
-        }
-        .overlay {
-            display: none;
-        }
-        .overlay.show {
-            display: block;
-        }
-    </style>
 </head>
 <body class="bg-gray-100">
-    <!-- Overlay -->
+    <!-- Overlay for mobile sidebar -->
     <div id="overlay" class="overlay fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
 
     <div class="min-h-screen flex">
@@ -43,13 +31,13 @@
                     <li><a href="#" class="block py-2 px-4 rounded hover:bg-orange-700">Customers</a></li>
                     <li><a href="#" class="block py-2 px-4 rounded hover:bg-orange-700">Location</a></li>
                     <li><a href="#" class="block py-2 px-4 rounded hover:bg-orange-700">Settings</a></li>
+                    <li><a href="logout.php" class="block py-2 px-4 rounded hover:bg-orange-700">Logout</a></li>
                 </ul>
             </nav>
         </aside>
 
         <!-- Main Content -->
         <div class="flex-1 md:ml-0">
-            <!-- Top Navigation -->
             <header class="bg-white shadow p-4 flex items-center justify-between">
                 <div class="flex items-center">
                     <button id="openSidebar" class="md:hidden mr-4">
@@ -63,7 +51,13 @@
             <main class="p-6">
                 <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-sm p-6">
                     <h2 class="text-2xl font-bold mb-6">Add New Location</h2>
-                    <form>
+                    <form id="registerForm" enctype="multipart/form-data">
+                        <!-- Gas Image Upload -->
+                        <div class="mb-4">
+                            <label for="gas_image" class="block text-sm font-medium text-gray-700 mb-1">Gas Image</label>
+                            <input type="file" id="gas_image" name="gas_image" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#ff6b00]" accept="image/*" required>
+                        </div>
+
                         <!-- Country Dropdown -->
                         <div class="mb-4">
                             <label for="country" class="block text-sm font-medium text-gray-700 mb-1">Country</label>
@@ -74,7 +68,7 @@
                             </select>
                         </div>
 
-                        <!-- State Dropdown (Updated) -->
+                        <!-- State Dropdown -->
                         <div class="mb-4">
                             <label for="state" class="block text-sm font-medium text-gray-700 mb-1">State</label>
                             <select id="state" name="state" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#ff6b00]" required>
@@ -82,8 +76,8 @@
                             </select>
                         </div>
 
-                         <!-- Gas Dropdown (Updated) -->
-                         <div class="mb-4">
+                        <!-- Gas Dropdown -->
+                        <div class="mb-4">
                             <label for="gas" class="block text-sm font-medium text-gray-700 mb-1">Gas kg</label>
                             <select id="gas" name="gas" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#ff6b00]" required>
                                 <option value="">Select Gas kg</option>
@@ -91,13 +85,14 @@
                                 <option value="2kg">2 kg</option>
                             </select>
                         </div>
-                        <!-- Specific price -->
+
+                        <!-- Price Input -->
                         <div class="mb-4">
                             <label for="price" class="block text-sm font-medium text-gray-700 mb-1">Price</label>
-                            <input type="text" id="price" name="price" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#ff6b00]" placeholder="Enter specific gas" required>
+                            <input type="text" id="price" name="price" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#ff6b00]" required>
                         </div>
 
-                        <!-- Currency Input (Updated) -->
+                        <!-- Currency Input -->
                         <div class="mb-6">
                             <label for="currency" class="block text-sm font-medium text-gray-700 mb-1">Currency</label>
                             <input type="text" id="currency" name="currency" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#ff6b00]" readonly>
@@ -109,55 +104,88 @@
             </main>
         </div>
     </div>
-
-    <!-- JavaScript for Sidebar Toggle & Location Selection -->
+    <script src="../asset/toast/jquery-3.7.1.min.js"></script>
+    <script src="../asset/toast/toastr.min.js"></script>
+    <!-- JavaScript for dynamic state and currency -->
     <script>
-        const sidebar = document.getElementById('sidebar');
-        const overlay = document.getElementById('overlay');
-        const openSidebarBtn = document.getElementById('openSidebar');
-        const closeSidebarBtn = document.getElementById('closeSidebar');
-        const countrySelect = document.getElementById("country");
-        const stateSelect = document.getElementById("state");
-        const currencyInput = document.getElementById("currency");
+        // JavaScript for mobile sidebar toggle and dynamic country-state selection
+const locations = {
+    "Nigeria": {
+        states: ["Lagos", "Abuja", "Kano", "Rivers"],
+        currency: "NGN (₦)"
+    },
+    "Ghana": {
+        states: ["Greater Accra", "Ashanti", "Central"],
+        currency: "GHS (₵)"
+    }
+};
 
-        function toggleSidebar(show) {
-            sidebar.classList.toggle('open', show);
-            overlay.classList.toggle('show', show);
-            sidebar.classList.toggle('hidden', !show);
-        }
+// Handle country selection and update states and currency
+document.getElementById('country').addEventListener('change', function () {
+    const selectedCountry = this.value;
+    const stateSelect = document.getElementById('state');
+    const currencyInput = document.getElementById('currency');
 
-        openSidebarBtn.addEventListener('click', () => toggleSidebar(true));
-        closeSidebarBtn.addEventListener('click', () => toggleSidebar(false));
-        overlay.addEventListener('click', () => toggleSidebar(false));
-
-        const locations = {
-            "Nigeria": {
-                states: ["Lagos", "Abuja", "Kano", "Rivers", "Oyo", "Kaduna", "Enugu"],
-                currency: "NGN (₦)"
-            },
-            "Ghana": {
-                states: ["Greater Accra", "Ashanti", "Central", "Northern", "Western", "Volta", "Eastern"],
-                currency: "GHS (₵)"
-            }
-        };
-
-        countrySelect.addEventListener("change", function () {
-            const selectedCountry = countrySelect.value;
-            stateSelect.innerHTML = "<option value=''>Select State</option>";
-
-            if (selectedCountry && locations[selectedCountry]) {
-                locations[selectedCountry].states.forEach(state => {
-                    const option = document.createElement("option");
-                    option.value = state;
-                    option.textContent = state;
-                    stateSelect.appendChild(option);
-                });
-
-                currencyInput.value = locations[selectedCountry].currency;
-            } else {
-                currencyInput.value = "";
-            }
+    stateSelect.innerHTML = "<option value=''>Select State</option>";
+    if (locations[selectedCountry]) {
+        locations[selectedCountry].states.forEach(state => {
+            const option = document.createElement('option');
+            option.value = state;
+            option.textContent = state;
+            stateSelect.appendChild(option);
         });
+        currencyInput.value = locations[selectedCountry].currency;
+    } else {
+        currencyInput.value = '';
+    }
+});
+
+// Mobile sidebar toggle
+const openSidebarBtn = document.getElementById('openSidebar');
+const closeSidebarBtn = document.getElementById('closeSidebar');
+const sidebar = document.getElementById('sidebar');
+const overlay = document.getElementById('overlay');
+
+// Open sidebar
+openSidebarBtn.addEventListener('click', function () {
+    sidebar.classList.remove('hidden');
+    overlay.classList.remove('hidden');
+});
+
+// Close sidebar when close button or overlay is clicked
+closeSidebarBtn.addEventListener('click', function () {
+    sidebar.classList.add('hidden');
+    overlay.classList.add('hidden');
+});
+
+// Close sidebar if overlay is clicked
+overlay.addEventListener('click', function () {
+    sidebar.classList.add('hidden');
+    overlay.classList.add('hidden');
+});
+
+// Handle form submission
+document.getElementById('registerForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+
+    fetch('upload_location.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert(data.message);
+        if (data.status === 'success') {
+            window.location.href = 'location_dashboard.php';  // Redirect to a dashboard or location list page
+        }
+    })
+    .catch(error => {
+        alert('Error: ' + error.message);
+    });
+});
+
     </script>
 </body>
 </html>
