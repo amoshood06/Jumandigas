@@ -1,3 +1,60 @@
+<?php 
+session_start();
+require '../db/db.php'; // Include database connection
+
+// Ensure user is logged in
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
+
+$user_id = $_SESSION['user_id'];
+
+// Fetch user details
+$stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
+$stmt->execute([$user_id]);
+$user = $stmt->fetch();
+
+// Fetch vendors in the same location
+$stmt = $pdo->prepare("SELECT * FROM users WHERE role = 'vendor' AND country = ? AND state = ? AND city = ?");
+$stmt->execute([$user['country'], $user['state'], $user['city']]);
+$vendors = $stmt->fetchAll();
+
+// Fetch gas price per kg
+$stmt = $pdo->prepare("SELECT price FROM locations WHERE country = ? AND state = ?");
+$stmt->execute([$user['country'], $user['state']]);
+$location = $stmt->fetch();
+$price_per_kg = $location ? $location['price'] : 0; // Renamed variable
+
+// Handle Order Submission
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $cylinder_type = $_POST['cylinder_type'];
+    $exchange = $_POST['exchange'];
+    $amount_kg = $_POST['amount_kg'];
+    $vendor_id = $_POST['vendor_id'];
+    $total_price = $amount_kg * $price_per_kg; // Correct variable
+    $currency = $user['currency'];
+
+    // Check if user has enough balance
+    if ($user['balance'] >= $total_price) {
+        // Deduct from user balance
+        $stmt = $pdo->prepare("UPDATE users SET balance = balance - ? WHERE id = ?");
+        $stmt->execute([$total_price, $user_id]);
+
+        // Generate tracking ID
+        $tracking_id = "TRK" . strtoupper(uniqid());
+
+        // Insert order
+        $stmt = $pdo->prepare("INSERT INTO orders (user_id, vendor_id, cylinder_type, exchange, amount_kg, total_price, currency, tracking_id) 
+                               VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$user_id, $vendor_id, $cylinder_type, $exchange, $amount_kg, $total_price, $currency, $tracking_id]);
+
+        echo "<script>alert('Order placed! Tracking ID: $tracking_id'); window.location='user-order-history.php';</script>";
+    } else {
+        echo "<script>alert('Insufficient balance!');</script>";
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -51,8 +108,8 @@
                     <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Deposit</a>
                     <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Buy Cylinder</a>
                     <a href="order-page.php" class="block p-3 hover:bg-orange-100 rounded-lg">Order Gas</a>
-                    <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Complain</a>
-                    <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Setting</a>
+                    <a href="order-page.php" class="block p-3 hover:bg-orange-100 rounded-lg">Order Gas History</a>
+                    <a href="user-complaint.php" class="block p-3 hover:bg-orange-100 rounded-lg">Complain</a>
                     <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Setting</a>
                 </nav>
 
@@ -88,98 +145,85 @@
             <!-- Order Page Content -->
             <div class="flex-1">
                 <h1 class="text-2xl font-bold mb-6">Order Gas</h1>
-                
+                <form method="POST">
                 <!-- Gas Options -->
-                <div class="grid grid-cols-2 gap-2 md:flex gap-2">
+                <div class="flex flex-col gap-2">
                     <!-- 1kg Gas Option -->
-                    <div class="flex items-center justify-between p-4 bg-white rounded-lg shadow">
-                        <div class="flex flex-col">
-                            <img src="" alt="">
-                            <h3 class="font-semibold">1kg Gas</h3>
-                            <p class="text-gray-600">₦1,000.00</p>
+                    <div class="flex flex-col p-4 bg-white rounded-lg shadow">
+                        <div>
+                            <h3 class="font-semibold">Your Cylinder</h3>
                         </div>
-                        <div class="flex items-center">
-                            <button class="p-1 bg-gray-200 rounded-full">
-                                <i class="fas fa-minus text-sm"></i>
-                            </button>
-                            <span class="mx-3">0</span>
-                            <button class="p-1 bg-gray-200 rounded-full">
-                                <i class="fas fa-plus text-sm"></i>
-                            </button>
+                       <select type="text" name="cylinder_type" required class="w-full p-2 border rounded mb-2">
+                        <option value="">Select cylinder</option>
+                        <option value="1kg">1kg</option>
+                        <option value="3kg">3kg</option>
+                        <option value="4kg">4kg</option>
+                       </select>
+                    </div>
+                    
+                    <!-- exchange Option -->
+                    <div class="flex flex-col p-4 bg-white rounded-lg shadow">
+                        <div>
+                            <h3 class="font-semibold">Cylinder Exchange</h3>
                         </div>
+                       <select type="text" name="exchange" required class="w-full p-2 border rounded mb-2">
+                        <option value="">Select exchange</option>
+                        <option value="pick">Pick</option>
+                        <option value="drop">Drop</option>
+                       </select>
                     </div>
 
-                    <!-- 3kg Gas Option -->
-                    <div class="flex items-center justify-between p-4 bg-white rounded-lg shadow">
+                    <!-- amount of kg -->
+                    <div class="flex flex-col p-4 bg-white rounded-lg shadow">
                         <div>
-                            <h3 class="font-semibold">3kg Gas</h3>
-                            <p class="text-gray-600">₦2,500.00</p>
+                            <h3 class="font-semibold">Amount of kg</h3>
                         </div>
-                        <div class="flex items-center">
-                            <button class="p-1 bg-gray-200 rounded-full">
-                                <i class="fas fa-minus text-sm"></i>
-                            </button>
-                            <span class="mx-3">0</span>
-                            <button class="p-1 bg-gray-200 rounded-full">
-                                <i class="fas fa-plus text-sm"></i>
-                            </button>
-                        </div>
+                        
+                        <input type="number" name="amount_kg" id="amount_kg" required class="w-full p-2 border rounded mb-2" oninput="calculateTotal()">
+                        
                     </div>
 
-                    <!-- 5kg Gas Option -->
-                    <div class="flex items-center justify-between p-4 bg-white rounded-lg shadow">
+                        <!-- amount of kg -->
+                    <div class="flex flex-col p-4 bg-white rounded-lg shadow">
                         <div>
-                            <h3 class="font-semibold">5kg Gas</h3>
-                            <p class="text-gray-600">₦4,000.00</p>
+                            <h3 class="font-semibold">Select Vendor:</h3>
                         </div>
-                        <div class="flex items-center">
-                            <button class="p-1 bg-gray-200 rounded-full">
-                                <i class="fas fa-minus text-sm"></i>
-                            </button>
-                            <span class="mx-3">0</span>
-                            <button class="p-1 bg-gray-200 rounded-full">
-                                <i class="fas fa-plus text-sm"></i>
-                            </button>
-                        </div>
+                        <select name="vendor_id" required class="w-full p-2 border rounded mb-2">
+                            <?php foreach ($vendors as $vendor) { ?>
+                                <option value="<?= $vendor['id'] ?>"><?= $vendor['full_name'] ?> (<?= $vendor['city'] ?>, <?= $vendor['state'] ?>)</option>
+                            <?php } ?>
+                        </select>
+                        
                     </div>
-
-                    <!-- 12.5kg Gas Option -->
-                    <div class="flex items-center justify-between p-4 bg-white rounded-lg shadow">
-                        <div>
-                            <h3 class="font-semibold">12.5kg Gas</h3>
-                            <p class="text-gray-600">₦8,000.00</p>
-                        </div>
-                        <div class="flex items-center">
-                            <button class="p-1 bg-gray-200 rounded-full">
-                                <i class="fas fa-minus text-sm"></i>
-                            </button>
-                            <span class="mx-3">0</span>
-                            <button class="p-1 bg-gray-200 rounded-full">
-                                <i class="fas fa-plus text-sm"></i>
-                            </button>
-                        </div>
-                    </div>
+                    
                 </div>
 
                 <!-- Order Summary -->
                 <div class="mt-8 bg-[#ff6b00] text-white p-4 rounded-lg">
                     <div class="flex justify-between items-center mb-4">
-                        <span>Total Items:</span>
-                        <span>0</span>
+                        <span>Price per Kg:</span>
+                        <span id="price"><?= $price_per_kg ?></span> <?= $user['currency'] ?>
                     </div>
                     <div class="flex justify-between items-center mb-4">
                         <span>Total Cost:</span>
-                        <span>₦0.00</span>
+                        <span id="total_price">0</span> <?= $user['currency'] ?>
                     </div>
-                    <button class="w-full bg-white text-[#ff6b00] py-2 rounded-lg font-semibold flex items-center justify-center">
+                    <button type="submit" class="w-full bg-white text-[#ff6b00] py-2 rounded-lg font-semibold flex items-center justify-center">
                         <i class="fas fa-shopping-cart mr-2"></i>
                         Place Order
                     </button>
                 </div>
+                </form>
             </div>
         </div>
     </main>
-
+    <script>
+        function calculateTotal() {
+            let amount = document.getElementById("amount_kg").value;
+            let price = document.getElementById("price").innerText;
+            document.getElementById("total_price").innerText = (amount * price).toFixed(2);
+        }
+    </script>
     <script>
         // Mobile menu functionality (same as in your original HTML)
         const menuButton = document.getElementById('menuButton');

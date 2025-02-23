@@ -88,11 +88,12 @@ function getUserLocation() {
                         </div>
                         
                         <nav class="space-y-2 px-4">
-                            <a href="#" class="block p-3 bg-[#ff6b00] text-white rounded-lg">Home</a>
+                            <a href="index.php" class="block p-3 bg-[#ff6b00] text-white rounded-lg">Home</a>
                             <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Deposit</a>
                             <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Buy Cylinder</a>
                             <a href="order-page.php" class="block p-3 hover:bg-orange-100 rounded-lg">Order Gas</a>
-                            <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Complain</a>
+                            <a href="user-order-history.php" class="block p-3 hover:bg-orange-100 rounded-lg">Order Gas History</a>
+                            <a href="user-complaint.php" class="block p-3 hover:bg-orange-100 rounded-lg">Complain</a>
                             <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Setting</a>
                         </nav>
 
@@ -104,7 +105,7 @@ function getUserLocation() {
                                     <div class="mb-2">⬇️</div>
                                     <div>Deposit</div>
                                 </a>
-                                <a href="#" class="bg-[#ff6b00] p-4 rounded-lg text-white text-center">
+                                <a href="order-page.php" class="bg-[#ff6b00] p-4 rounded-lg text-white text-center">
                                     <div class="mb-2">🚚</div>
                                     <div>Orders Gas</div>
                                 </a>
@@ -112,7 +113,7 @@ function getUserLocation() {
                                     <div class="mb-2">🛒</div>
                                     <div>Buy Cylinder</div>
                                 </a>
-                                <a href="#" class="bg-[#ff6b00] p-4 rounded-lg text-white text-center">
+                                <a href="user-order-history.php" class="bg-[#ff6b00] p-4 rounded-lg text-white text-center">
                                     <div class="text-2xl font-bold">5</div>
                                     <div>Total Orders</div>
                                 </a>

@@ -19,8 +19,8 @@
     };
 
     const currencies = {
-        nigeria: "₦ Nigerian Naira",
-        ghana: "₵ Ghanaian Cedi"
+        nigeria: "₦",
+        ghana: "₵"
     };
 
     function updateStates() {

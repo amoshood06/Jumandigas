@@ -1,3 +1,53 @@
+<?php
+session_start();
+require '../db/db.php';
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Validate user session
+    if (!isset($_SESSION['user_id'])) {
+        echo json_encode(["status" => "error", "message" => "User not logged in"]);
+        exit;
+    }
+
+    $user_id = $_SESSION['user_id'];
+    $amount = $_POST['depositAmount'];
+    $payment_method = $_POST['paymentMethod'];
+
+    // Validate input
+    if ($amount < 100) {
+        echo json_encode(["status" => "error", "message" => "Minimum deposit amount is ₦100"]);
+        exit;
+    }
+
+    try {
+        // Insert deposit record
+        $stmt = $pdo->prepare("INSERT INTO deposits (user_id, amount, payment_method, status) VALUES (?, ?, ?, 'successful')");
+        $stmt->execute([$user_id, $amount, $payment_method]);
+
+        // Update user balance
+        $updateBalance = $pdo->prepare("UPDATE users SET balance = balance + ? WHERE id = ?");
+        $updateBalance->execute([$amount, $user_id]);
+
+        // Fetch updated balance and currency
+        $balanceQuery = $pdo->prepare("SELECT balance, currency FROM users WHERE id = ?");
+        $balanceQuery->execute([$user_id]);
+        $user = $balanceQuery->fetch(PDO::FETCH_ASSOC);
+
+        // Return response
+        echo json_encode([
+            "status" => "success", 
+            "message" => "Deposit successful",
+            "balance" => number_format($user['balance'], 2), 
+            "currency" => $user['currency']
+        ]);
+    } catch (PDOException $e) {
+        echo json_encode(["status" => "error", "message" => "Database error: " . $e->getMessage()]);
+    }
+}
+?>
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -76,11 +126,33 @@
             <div class="flex-1 w-full">
                 <h1 class="text-2xl font-bold mb-6">Deposit Funds</h1>
                 
-                <!-- Account Balance -->
+                <!-- Account Balance --> 
                 <div class="bg-white shadow rounded-lg p-6 mb-6">
                     <h2 class="text-xl font-semibold mb-2">Current Balance</h2>
-                    <p class="text-3xl font-bold text-[#ff6b00]">₦ <span id="currentBalance">5,000.00</span></p>
+                    <p class="text-3xl font-bold text-[#ff6b00]">
+                        <span id="currencySymbol">₦</span> 
+                        <span id="currentBalance">0.00</span>
+                    </p>
                 </div>
+
+                <script>
+                    document.addEventListener("DOMContentLoaded", function() {
+                        fetchBalance();
+                    });
+
+                    function fetchBalance() {
+                        fetch("fetch_balance.php") // Create a new file to get balance
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === "success") {
+                                document.getElementById("currentBalance").innerText = data.balance;
+                                document.getElementById("currencySymbol").innerText = data.currency;
+                            }
+                        })
+                        .catch(error => console.error("Error fetching balance:", error));
+                    }
+                </script>
+
 
                 <!-- Deposit Form -->
                 <div class="bg-white shadow rounded-lg p-6 mb-6">
@@ -164,72 +236,54 @@
             }
         });
 
-        // Deposit form submission handler
-        document.getElementById('depositForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const amount = document.getElementById('depositAmount').value;
-            const method = document.getElementById('paymentMethod').value;
-            
-            // Simulate a successful deposit
-            setTimeout(() => {
-                alert(`Deposit of ₦${amount} via ${method} was successful!`);
-                updateBalance(parseFloat(amount));
-                addTransaction(amount, 'Deposit');
-                this.reset();
-            }, 1000);
-        });
-
-        // Update balance
-        function updateBalance(amount) {
-            const balanceElement = document.getElementById('currentBalance');
-            let currentBalance = parseFloat(balanceElement.textContent.replace(',', ''));
-            currentBalance += amount;
-            balanceElement.textContent = currentBalance.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        }
-
-        // Add transaction to the table
-        function addTransaction(amount, type) {
-            const tableBody = document.getElementById('transactionTableBody');
-            const newRow = tableBody.insertRow(0);
-            newRow.innerHTML = `
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${new Date().toLocaleDateString()}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${type}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">₦${parseFloat(amount).toFixed(2)}</td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                        Successful
-                    </span>
-                </td>
-            `;
-        }
-
-        // Initialize with some sample transactions
-        function initializeTransactions() {
-            const sampleTransactions = [
-                { date: '2023-05-20', type: 'Deposit', amount: 2000, status: 'Successful' },
-                { date: '2023-05-18', type: 'Purchase', amount: 1500, status: 'Completed' },
-                { date: '2023-05-15', type: 'Deposit', amount: 3000, status: 'Successful' },
-                { date: '2023-05-10', type: 'Purchase', amount: 2500, status: 'Completed' }
-            ];
-
-            const tableBody = document.getElementById('transactionTableBody');
-            sampleTransactions.forEach(transaction => {
-                const newRow = tableBody.insertRow(-1);
-                newRow.innerHTML = `
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${transaction.date}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${transaction.type}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">₦${transaction.amount.toFixed(2)}</td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${transaction.type === 'Deposit' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}">
-                            ${transaction.status}
-                        </span>
-                    </td>
-                `;
-            });
-        }
-
-        // Initialize transactions on page load
-        initializeTransactions();
     </script>
+    <script>
+document.getElementById('depositForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    let formData = new FormData(this);
+
+    fetch('deposit.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === "success") {
+            alert("Deposit successful!");
+            updateBalance(parseFloat(formData.get('depositAmount')));
+            addTransaction(formData.get('depositAmount'), 'Deposit');
+        } else {
+            alert("Error: " + data.message);
+        }
+    })
+    .catch(error => console.error('Error:', error));
+});
+
+// Update balance
+function updateBalance(amount) {
+    const balanceElement = document.getElementById('currentBalance');
+    let currentBalance = parseFloat(balanceElement.textContent.replace(',', ''));
+    currentBalance += amount;
+    balanceElement.textContent = currentBalance.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
+// Add transaction to the table
+function addTransaction(amount, type) {
+    const tableBody = document.getElementById('transactionTableBody');
+    const newRow = tableBody.insertRow(0);
+    newRow.innerHTML = `
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${new Date().toLocaleDateString()}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${type}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">₦${parseFloat(amount).toFixed(2)}</td>
+        <td class="px-6 py-4 whitespace-nowrap">
+            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                Successful
+            </span>
+        </td>
+    `;
+}
+</script>
+
 </body>
 </html>

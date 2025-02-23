@@ -1,9 +1,9 @@
 <?php
 // Database credentials
-$host = "localhost"; // Change to your database host
-$dbname = "jumandigas"; // Change to your database name
-$username = "root"; // Change to your database username
-$password = ""; // Change to your database password
+$host = "sdb-82.hosting.stackcp.net"; // Change to your database host
+$dbname = "jumandigas-353038394901"; // Change to your database name
+$username = "jumandigas-353038394901"; // Change to your database username
+$password = "77gkc8e9sb"; // Change to your database password
 
 try {
     // Create a new PDO connection
