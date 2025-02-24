@@ -23,7 +23,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         } elseif ($user['role'] == 'vendor') {
             $redirect = "vendor/index.php";
         } elseif ($user['role'] == 'rider') {
-            $redirect = "rider/index.php";
+            $redirect = "riders/index.php";
         } else {
             echo json_encode(["status" => "error", "message" => "Unauthorized role!"]);
             exit();
