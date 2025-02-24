@@ -11,7 +11,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
 
 $allowed_pages = [
     "user" => ["index.php"],
-    "vendor" => ["index.php"],
+    "vendor" => ["index.php", "vendor-order-management.php"],
     "rider" => ["index.php"]
 ];
 
