@@ -38,7 +38,7 @@ if ($_SESSION['role'] != 'vendor') {
 
         <div class="text-white">
             <p class="text-sm">Vendor Account</p>
-            <p class="text-2xl font-bold">Vendor Name</p>
+            <p class="text-2xl font-bold" id="fullname"></p>
         </div>
         <a href="logout.php">
             <button class="bg-gray-200 px-6 py-2 rounded-full font-bold">Logout</button>
@@ -68,10 +68,10 @@ if ($_SESSION['role'] != 'vendor') {
                         <nav class="space-y-2 px-4">
                             <a href="index.php" class="block p-3 bg-[#ff6b00] text-white rounded-lg">Dashboard</a>
                             <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Inventory</a>
-                            <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Orders</a>
-                            <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Transactions</a>
-                            <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Reports</a>
-                            <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Settings</a>
+                            <a href="vendor-order-management.php" class="block p-3 hover:bg-orange-100 rounded-lg">Orders</a>
+                            <a href="vendor-transactions.php" class="block p-3 hover:bg-orange-100 rounded-lg">Transactions</a>
+                            <a href="vendor-report.php" class="block p-3 hover:bg-orange-100 rounded-lg">Reports</a>
+                            <a href="vendor-settings.php" class="block p-3 hover:bg-orange-100 rounded-lg">Settings</a>
                         </nav>
                     </div>
                 </div>
@@ -147,29 +147,7 @@ if ($_SESSION['role'] != 'vendor') {
 
                 <!-- Inventory Management -->
                 <div class="bg-white shadow rounded-lg p-4 sm:p-6">
-                    <h2 class="text-xl font-semibold mb-4">Inventory Management</h2>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div class="border rounded-lg p-4">
-                            <h3 class="font-semibold mb-2">1kg Cylinder</h3>
-                            <p class="text-gray-600">In Stock: 50</p>
-                            <button class="mt-2 bg-[#ff6b00] text-white px-4 py-2 rounded-lg text-sm w-full">Update Stock</button>
-                        </div>
-                        <div class="border rounded-lg p-4">
-                            <h3 class="font-semibold mb-2">3kg Cylinder</h3>
-                            <p class="text-gray-600">In Stock: 30</p>
-                            <button class="mt-2 bg-[#ff6b00] text-white px-4 py-2 rounded-lg text-sm w-full">Update Stock</button>
-                        </div>
-                        <div class="border rounded-lg p-4">
-                            <h3 class="font-semibold mb-2">5kg Cylinder</h3>
-                            <p class="text-gray-600">In Stock: 40</p>
-                            <button class="mt-2 bg-[#ff6b00] text-white px-4 py-2 rounded-lg text-sm w-full">Update Stock</button>
-                        </div>
-                        <div class="border rounded-lg p-4">
-                            <h3 class="font-semibold mb-2">12.5kg Cylinder</h3>
-                            <p class="text-gray-600">In Stock: 20</p>
-                            <button class="mt-2 bg-[#ff6b00] text-white px-4 py-2 rounded-lg text-sm w-full">Update Stock</button>
-                        </div>
-                    </div>
+                   
                 </div>
             </div>
         </div>
@@ -211,5 +189,24 @@ if ($_SESSION['role'] != 'vendor') {
             }
         });
     </script>
+     
+     <script>
+                    document.addEventListener("DOMContentLoaded", function() {
+                        fetchBalance();
+                    });
+
+                    function fetchBalance() {
+                        fetch("fetch_balance.php") // Create a new file to get balance
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === "success") {
+                                document.getElementById("currentBalance").innerText = data.balance;
+                                document.getElementById("currencySymbol").innerText = data.currency;
+                                document.getElementById("fullname").innerText = data.full_name;
+                            }
+                        })
+                        .catch(error => console.error("Error fetching balance:", error));
+                    }
+                </script>
 </body>
 </html>
