@@ -49,8 +49,8 @@ $userRole = $_SESSION['role'] ?? null; // Get user role if logged in
                     <a href="./user/order-page.php" class="text-black hover:text-primary">Order Gas</a>
                     <a href="buy-cylinder.php" class="text-black hover:text-primary">Buy Cylinder</a>
                         <?php if (!$userRole): ?>
-                            <a href="#" class="text-black hover:text-primary">Register</a>
-                            <a href="#" class="bg-primary text-white px-8 py-2 rounded-full hover:bg-orange-700">Login</a>
+                            <a href="register.php" class="text-black hover:text-primary">Register</a>
+                            <a href="login.php" class="bg-primary text-white px-8 py-2 rounded-full hover:bg-orange-700">Login</a>
                         <?php else: ?>
                         <!-- Show Dashboard when user is logged in -->
                         <?php 
