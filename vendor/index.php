@@ -66,7 +66,7 @@ if ($_SESSION['role'] != 'vendor') {
                         </div>
                         
                         <nav class="space-y-2 px-4">
-                            <a href="#" class="block p-3 bg-[#ff6b00] text-white rounded-lg">Dashboard</a>
+                            <a href="index.php" class="block p-3 bg-[#ff6b00] text-white rounded-lg">Dashboard</a>
                             <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Inventory</a>
                             <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Orders</a>
                             <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Transactions</a>
