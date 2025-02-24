@@ -1,6 +1,6 @@
 <?php
 require_once "../auth_check.php";
-require_once "../db_connect.php";
+require_once "../db/db.php";
 
 // Ensure the user is a vendor
 if ($_SESSION['role'] != 'vendor') {
