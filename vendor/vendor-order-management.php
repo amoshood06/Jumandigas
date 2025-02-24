@@ -1,6 +1,6 @@
 <?php
-require_once "../auth_check.php";
-if ($_SESSION['role'] != 'vendor') {
+require_once "../auth_check.php"; // Ensure user is authenticated
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'vendor') {
     header("Location: ../login.php");
     exit();
 }
