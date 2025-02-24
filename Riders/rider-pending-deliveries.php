@@ -1,3 +1,30 @@
+<?php
+require_once "../auth_check.php";
+require_once "../db_connect.php";
+
+// Ensure the user is a vendor
+if ($_SESSION['role'] != 'vendor') {
+    header("Location: ../login.php");
+    exit();
+}
+
+$vendor_id = $_SESSION['user_id']; // Vendor's ID from session
+
+// Fetch vendor-specific orders along with user details
+$query = "
+    SELECT o.*, u.address, u.phone_number 
+    FROM orders o
+    JOIN users u ON o.user_id = u.id
+    WHERE o.vendor_id = ?
+    ORDER BY o.created_at DESC
+";
+$stmt = $conn->prepare($query);
+$stmt->bind_param("i", $vendor_id);
+$stmt->execute();
+$result = $stmt->get_result();
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,6 +43,11 @@
             }
         }
     </style>
+    <script>
+        function updateStatus(orderId, newStatus) {
+            window.location.href = 'update_status.php?id=' + orderId + '&status=' + newStatus;
+        }
+    </script>
 </head>
 <body class="bg-[#ff6b00]">
     <!-- Header -->
@@ -92,98 +124,61 @@
                     </div>
                 </div>
 
-                <!-- Delivery List -->
-                <div class="bg-white shadow rounded-lg overflow-hidden">
-                    <div class="p-4 border-b">
-                        <h2 class="text-lg font-semibold">Today's Deliveries</h2>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Address</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#ORD001</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Alice Johnson</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">123 Main St, Lagos</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2x 5kg Cylinder</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                            Pending Pickup
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <button class="text-[#ff6b00] hover:text-[#e05e00]" onclick="startDelivery('#ORD001')">Start Delivery</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#ORD002</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Bob Smith</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">456 Elm St, Lagos</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">1x 12.5kg Cylinder</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                                            En Route
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <button class="text-[#ff6b00] hover:text-[#e05e00]" onclick="completeDelivery('#ORD002')">Complete Delivery</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#ORD003</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Charlie Brown</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">789 Oak St, Lagos</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">3x 3kg Cylinder</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                            Pending Pickup
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <button class="text-[#ff6b00] hover:text-[#e05e00]" onclick="startDelivery('#ORD003')">Start Delivery</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#ORD004</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Diana Evans</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">101 Pine St, Lagos</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">1x 5kg Cylinder, 1x 3kg Cylinder</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                                            En Route
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <button class="text-[#ff6b00] hover:text-[#e05e00]" onclick="completeDelivery('#ORD004')">Complete Delivery</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#ORD005</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Ethan Foster</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">202 Maple St, Lagos</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">1x 12.5kg Cylinder</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                            Pending Pickup
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <button class="text-[#ff6b00] hover:text-[#e05e00]" onclick="startDelivery('#ORD005')">Start Delivery</button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                
+                <!-- Vendor Order List -->
+<div class="bg-white shadow rounded-lg overflow-hidden">
+    <div class="p-4 border-b">
+        <h2 class="text-lg font-semibold">Orders Assigned to You</h2>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tracking ID</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cylinder Type</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Exchange</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount (KG)</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Price</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User Address</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User Phone</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                <?php while ($row = $result->fetch_assoc()) { ?>
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"><?= $row['tracking_id']; ?></td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><?= $row['cylinder_type']; ?></td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><?= ucfirst($row['exchange']); ?></td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><?= $row['amount_kg']; ?> KG</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><?= $row['currency']; ?> <?= number_format($row['total_price'], 2); ?></td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><?= $row['address']; ?></td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><?= $row['phone_number']; ?></td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                                <?= $row['status'] == 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                    ($row['status'] == 'processing' ? 'bg-blue-100 text-blue-800' :
+                                    ($row['status'] == 'delivered' ? 'bg-green-100 text-green-800' :
+                                    'bg-red-100 text-red-800')); ?>">
+                                <?= ucfirst($row['status']); ?>
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <?php if ($row['status'] == 'pending') { ?>
+                                <button class="text-[#ff6b00] hover:text-[#e05e00]" onclick="updateStatus(<?= $row['id']; ?>, 'processing')">Process</button>
+                            <?php } elseif ($row['status'] == 'processing') { ?>
+                                <button class="text-[#ff6b00] hover:text-[#e05e00]" onclick="updateStatus(<?= $row['id']; ?>, 'delivered')">Mark Delivered</button>
+                            <?php } else { ?>
+                                <span class="text-gray-600 font-semibold"><?= ucfirst($row['status']); ?></span>
+                            <?php } ?>
+                        </td>
+                    </tr>
+                <?php } ?>
+            </tbody>
+        </table>
+    </div>
+</div>
 
                 <!-- Pagination -->
                 <div class="flex items-center justify-between mt-6">
