@@ -1,3 +1,11 @@
+<?php
+require_once "../auth_check.php"; // Ensure user is authenticated
+if ($_SESSION['role'] != 'vendor') {
+    header("Location: ../login.php");
+    exit();
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -74,79 +82,80 @@
 
             <!-- Order Management Content -->
             <div class="flex-1 w-full">
-                <h1 class="text-2xl font-bold mb-6">Order Management</h1>
-                
-                <!-- Order Filters -->
-                <div class="mb-6">
-                    <div class="flex flex-wrap gap-4">
-                        <button class="bg-[#ff6b00] text-white px-4 py-2 rounded-lg text-sm">All Orders</button>
-                        <button class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm">Pending</button>
-                        <button class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm">Accepted</button>
-                        <button class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm">Rejected</button>
-                    </div>
-                </div>
+                        <h2 class="text-2xl font-bold text-center mb-6">Order Management</h2>
 
-                <!-- Orders Table -->
-                <div class="bg-white shadow rounded-lg p-4 sm:p-6 overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
-                                <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                                <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
-                                <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                                <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            <tr>
-                                <td class="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#1001</td>
-                                <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">John Doe</td>
-                                <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">2x 5kg, 1x 3kg</td>
-                                <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">₦10,500</td>
-                                <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Pending</span>
-                                </td>
-                                <td class="px-3 py-4 whitespace-nowrap text-sm font-medium">
-                                    <button class="text-green-600 hover:text-green-900 mr-3" onclick="handleOrder('1001', 'accept')">Accept</button>
-                                    <button class="text-red-600 hover:text-red-900" onclick="handleOrder('1001', 'reject')">Reject</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#1002</td>
-                                <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">Jane Smith</td>
-                                <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">1x 12.5kg</td>
-                                <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">₦8,000</td>
-                                <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Pending</span>
-                                </td>
-                                <td class="px-3 py-4 whitespace-nowrap text-sm font-medium">
-                                    <button class="text-green-600 hover:text-green-900 mr-3" onclick="handleOrder('1002', 'accept')">Accept</button>
-                                    <button class="text-red-600 hover:text-red-900" onclick="handleOrder('1002', 'reject')">Reject</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#1003</td>
-                                <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">Bob Johnson</td>
-                                <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">3x 1kg</td>
-                                <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">₦3,000</td>
-                                <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Accepted</span>
-                                </td>
-                                <td class="px-3 py-4 whitespace-nowrap text-sm font-medium">
-                                    <span class="text-gray-500">Accepted</span>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                        <table class="w-full bg-white shadow-md rounded-lg overflow-hidden">
+                            <thead class="bg-gray-800 text-white">
+                                <tr>
+                                    <th class="py-2 px-4">Order ID</th>
+                                    <th class="py-2 px-4">Customer Details</th>
+                                    <th class="py-2 px-4">Items</th>
+                                    <th class="py-2 px-4">Total Price</th>
+                                    <th class="py-2 px-4">Status</th>
+                                    <th class="py-2 px-4">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="orders-table">
+                                <!-- Orders will be loaded here dynamically -->
+                            </tbody>
+                        </table>
+                        </div>
 
-                <!-- Pagination -->
-                <div class="flex justify-center gap-4 mt-6">
-                    <button class="bg-[#ff6b00] text-white px-4 py-2 rounded-lg text-sm">←</button>
-                    <button class="bg-[#ff6b00] text-white px-4 py-2 rounded-lg text-sm">→</button>
-                </div>
+                        <script>
+                        function fetchOrders() {
+                            fetch('fetch_orders.php')
+                            .then(response => response.json())
+                            .then(orders => {
+                                const tableBody = document.getElementById("orders-table");
+                                tableBody.innerHTML = "";
+
+                                orders.forEach(order => {
+                                    tableBody.innerHTML += `
+                                        <tr class="border-b">
+                                            <td class="py-2 px-4 text-center">${order.id}</td>
+                                            <td class="py-2 px-4">
+                                                <strong>${order.full_name}</strong> <br>
+                                                ${order.address} <br>
+                                                📞 ${order.telephone}
+                                            </td>
+                                            <td class="py-2 px-4">${order.items}</td>
+                                            <td class="py-2 px-4">₦${order.total}</td>
+                                            <td class="py-2 px-4">
+                                                <span class="px-2 py-1 rounded text-white ${order.status === 'Pending' ? 'bg-yellow-500' : (order.status === 'Accepted' ? 'bg-green-500' : 'bg-red-500')}">
+                                                    ${order.status}
+                                                </span>
+                                            </td>
+                                            <td class="py-2 px-4">
+                                                ${order.status === 'Pending' ? `
+                                                    <button onclick="handleOrder(${order.id}, 'accept')" class="bg-green-500 text-white px-3 py-1 rounded">Accept</button>
+                                                    <button onclick="handleOrder(${order.id}, 'reject')" class="bg-red-500 text-white px-3 py-1 rounded ml-2">Reject</button>
+                                                ` : `<span class="text-gray-500">${order.status}</span>`}
+                                            </td>
+                                        </tr>
+                                    `;
+                                });
+                            });
+                        }
+
+                        function handleOrder(orderId, action) {
+                            fetch('update_order.php', {
+                                method: 'POST',
+                                body: new URLSearchParams({
+                                    order_id: orderId,
+                                    status: action === 'accept' ? 'Accepted' : 'Rejected'
+                                }),
+                                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                alert(data.message);
+                                fetchOrders(); // Reload orders after update
+                            })
+                            .catch(error => console.error('Error:', error));
+                        }
+
+                        document.addEventListener("DOMContentLoaded", fetchOrders);
+                        </script>
             </div>
         </div>
     </main>
@@ -187,26 +196,7 @@
             }
         });
 
-        // Handle order acceptance or rejection
-        function handleOrder(orderId, action) {
-            // In a real application, this would make an API call to update the order status
-            console.log(`Order ${orderId} ${action}ed`);
-            
-            // For demonstration, we'll update the UI
-            const row = document.querySelector(`tr:has(td:first-child:contains(#${orderId}))`);
-            if (row) {
-                const statusCell = row.querySelector('td:nth-child(5)');
-                const actionsCell = row.querySelector('td:last-child');
-                
-                if (action === 'accept') {
-                    statusCell.innerHTML = '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Accepted</span>';
-                    actionsCell.innerHTML = '<span class="text-gray-500">Accepted</span>';
-                } else if (action === 'reject') {
-                    statusCell.innerHTML = '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Rejected</span>';
-                    actionsCell.innerHTML = '<span class="text-gray-500">Rejected</span>';
-                }
-            }
-        }
+        
     </script>
 </body>
 </html>
