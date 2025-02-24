@@ -202,7 +202,7 @@ if ($_SESSION['role'] != 'vendor') {
                             if (data.status === "success") {
                                 document.getElementById("currentBalance").innerText = data.balance;
                                 document.getElementById("currencySymbol").innerText = data.currency;
-                                document.getElementById("fullname").innerText = data.full_name;
+                                document.getElementById("full_name").innerText = data.full_name;
                             }
                         })
                         .catch(error => console.error("Error fetching balance:", error));
