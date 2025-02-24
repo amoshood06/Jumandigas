@@ -59,8 +59,29 @@ function getUserLocation() {
 
         <div class="text-white">
             <p class="text-sm">Wallet</p>
-            <p class="text-2xl font-bold">N20,000</p>
+            <p class="text-2xl font-bold">
+            <span id="currencySymbol">₦</span> 
+            <span id="currentBalance">0.00</span>
+            </p>
+            
         </div>
+        <script>
+                    document.addEventListener("DOMContentLoaded", function() {
+                        fetchBalance();
+                    });
+
+                    function fetchBalance() {
+                        fetch("fetch_balance.php") // Create a new file to get balance
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === "success") {
+                                document.getElementById("currentBalance").innerText = data.balance;
+                                document.getElementById("currencySymbol").innerText = data.currency;
+                            }
+                        })
+                        .catch(error => console.error("Error fetching balance:", error));
+                    }
+                </script>
         <a href="logout.php">
         <button class="bg-gray-200 px-6 py-2 rounded-full font-bold">Logout</button>
         </a>
