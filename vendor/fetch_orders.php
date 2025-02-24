@@ -8,7 +8,7 @@ if ($_SESSION['role'] != 'vendor') {
 include '../db/db.php';
 
 try {
-    $sql = "SELECT o.id, u.full_name, u.address, u.telephone, o.items, o.total, o.status 
+    $sql = "SELECT o.vendor_id, u.full_name, u.address, u.telephone, o.items, o.total, o.status 
             FROM orders o 
             JOIN users u ON o.vendor_id = u.id";
     $stmt = $pdo->query($sql);
