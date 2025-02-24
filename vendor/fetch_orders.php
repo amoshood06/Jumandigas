@@ -10,7 +10,7 @@ include '../db/db.php';
 try {
     $sql = "SELECT o.id, u.full_name, u.address, u.telephone, o.items, o.total, o.status 
             FROM orders o 
-            JOIN users u ON o.user_id = u.id";
+            JOIN users u ON o.vendor_id = u.id";
     $stmt = $pdo->query($sql);
     $orders = $stmt->fetchAll();
 
