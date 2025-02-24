@@ -2,13 +2,12 @@
 session_start();
 $userRole = $_SESSION['role'] ?? null; // Get user role if logged in
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JumandiGas - Fast Gas Delivery</title>
+    <title>Testimonials - JumandiGas</title>
     <link rel="shortcut icon" href="./asset/image/logo.png" type="image/x-icon">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -31,16 +30,22 @@ $userRole = $_SESSION['role'] ?? null; // Get user role if logged in
         .mobile-menu.active {
             transform: translateX(0);
         }
+        .testimonial-card {
+            transition: all 0.3s ease;
+        }
+        .testimonial-card:hover {
+            transform: translateY(-5px);
+        }
     </style>
 </head>
-<body class="bg-white pt-16">
-    <!-- Header -->
-    <header class="fixed top-0 left-0 right-0 bg-orange-50 z-50">
+<body class="bg-orange-50 pt-16">
+    <!-- Fixed Header -->
+    <header class="fixed top-0 left-0 right-0 bg-orange-50 border-b z-50">
         <div class="container mx-auto px-4">
             <div class="flex items-center justify-between h-16">
                 <!-- Logo -->
                 <a href="#" class="flex-shrink-0">
-                <img src="./asset/image/logo.png" alt="City Logo" class="w-20 h-10 object-contain">
+                    <img src="./asset/image/logo.png" alt="JumandiGas" class="h-8">
                 </a>
 
                 <!-- Desktop Navigation -->
@@ -48,7 +53,7 @@ $userRole = $_SESSION['role'] ?? null; // Get user role if logged in
                     <a href="index.php" class="text-black hover:text-primary">Home</a>
                     <a href="./user/order-page.php" class="text-black hover:text-primary">Order Gas</a>
                     <a href="buy-cylinder.php" class="text-black hover:text-primary">Buy Cylinder</a>
-                        <?php if (!$userRole): ?>
+                    <?php if (!$userRole): ?>
                             <a href="#" class="text-black hover:text-primary">Register</a>
                             <a href="#" class="bg-primary text-white px-8 py-2 rounded-full hover:bg-orange-700">Login</a>
                         <?php else: ?>
@@ -73,18 +78,19 @@ $userRole = $_SESSION['role'] ?? null; // Get user role if logged in
                 </button>
             </div>
         </div>
+    </header>
 
-        <!-- Mobile Navigation -->
-        <div class="mobile-menu fixed inset-y-0 left-0 w-64 bg-white shadow-lg z-50 md:hidden">
-            <div class="p-4">
-                <button class="mb-4 text-gray-600 hover:text-gray-900" id="close-menu-button">
-                    <i class="fas fa-times text-2xl"></i>
-                </button>
-                <div class="flex flex-col space-y-4">
-                    <a href="index.php" class="text-black hover:text-primary">Home</a>
-                    <a href="./user/order-page.php" class="text-black hover:text-primary">Order Gas</a>
-                    <a href="#" class="text-black hover:text-primary">Buy Cylinder</a>
-                    <?php if (!$userRole): ?>
+    <!-- Mobile Navigation -->
+    <div class="mobile-menu fixed inset-y-0 left-0 w-64 bg-white shadow-lg z-50 md:hidden">
+        <div class="p-4">
+            <button class="mb-4 text-gray-600 hover:text-gray-900" id="close-menu-button">
+                <i class="fas fa-times text-2xl"></i>
+            </button>
+            <div class="flex flex-col space-y-4">
+                <a href="#" class="text-black hover:text-primary">Home</a>
+                <a href="#" class="text-black hover:text-primary">Order Gas</a>
+                <a href="#" class="text-black hover:text-primary">Buy Cylinder</a>
+                <?php if (!$userRole): ?>
                     <a href="register.php" class="text-black hover:text-primary">Register</a>
                     <a href="login.php" class="bg-primary text-white px-6 py-2 rounded-full text-center hover:bg-orange-700">Login</a>
                     <?php else: ?>
@@ -101,60 +107,119 @@ $userRole = $_SESSION['role'] ?? null; // Get user role if logged in
                     ?>
                     <a href="<?= $dashboardUrl ?>" class="bg-primary text-white px-6 py-2 rounded-full text-center hover:bg-orange-700">Dashboard</a>
                 <?php endif; ?>
-                </div>
             </div>
         </div>
-    </header>
+    </div>
 
-    <!-- Hero Section -->
+    <!-- Main Content -->
     <main class="container mx-auto px-4 py-12">
-        <div class="grid md:grid-cols-2 gap-8 items-center">
-            <!-- Left Column -->
-            <div class="space-y-6">
-                <div class="inline-flex items-center gap-2 bg-orange-50 px-4 py-2 rounded-full">
-                    <i class="fas fa-motorcycle text-primary"></i>
-                    <span class="text-primary font-medium">Bike Delivery</span>
-                </div>
-
-                <h1 class="text-4xl md:text-6xl font-bold leading-tight">
-                    The Fastest Delivery<br>
-                    in <span class="text-primary">Your City</span>
-                </h1>
-
-                <p class="text-gray-700 text-lg max-w-lg">
-                    At JumandiGas, we bring you a seamless and stress-free way to order and receive cooking gas at your doorstep. No more unexpected gas shortages or long refill queues—just a fast, safe, and convenient delivery service that keeps your kitchen running.
-                </p>
-
-                <div class="flex flex-wrap gap-4">
-                    <a href="#" class="bg-primary text-white px-8 py-3 rounded-full hover:bg-orange-700 inline-block">
-                        Book Now
-                    </a>
-                    <a href="#" class="text-primary hover:bg-orange-100 px-8 py-3 rounded-full inline-flex items-center">
-                        Order Process
-                        <i class="fas fa-arrow-right ml-2"></i>
-                    </a>
-                </div>
-                <!-- Service Images -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-12">
-                    <div class="rounded-2xl overflow-hidden">
-                        <img src="./asset/image/slider-one.jpg" alt="Industrial facility" class="w-full h-48 object-cover">
-                    </div>
-                    <div class="rounded-2xl overflow-hidden">
-                        <img src="./asset/image/slider-two.jpg" alt="Kettle on stove" class="w-full h-48 object-cover">
-                    </div>
-                    <div class="rounded-2xl overflow-hidden">
-                        <img src="./asset/image/slider-three.jpg" alt="Worker in safety gear" class="w-full h-48 object-cover">
-                    </div>
-                </div>
+        <!-- Testimonials Header -->
+        <div class="text-center mb-16">
+            <div class="inline-block bg-orange-100/80 px-4 py-2 rounded-full mb-4">
+                <span class="text-primary font-medium">Testimonials</span>
             </div>
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">What Our Customers Say</h1>
+            <p class="text-gray-600 max-w-2xl mx-auto">
+                Discover why thousands of customers trust JumandiGas for their cooking gas needs. Read their experiences and stories.
+            </p>
+        </div>
 
-            <!-- Right Column -->
-            <div class="relative flex justify-center items-center mt-8 md:mt-0 hidden md:block">
-                <img src="./asset/image/Layer.png" alt="Woman with phone" class="w-[80%] h-auto">
+        <!-- Featured Testimonial -->
+        <div class="bg-white rounded-3xl p-8 mb-16 shadow-lg">
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div class="space-y-6">
+                    <div class="text-primary">
+                        <i class="fas fa-quote-left text-4xl"></i>
+                    </div>
+                    <p class="text-2xl font-medium leading-relaxed">
+                        "JumandiGas has revolutionized how I get my cooking gas. The service is prompt, professional, and their safety standards are impressive. I never have to worry about running out of gas anymore!"
+                    </p>
+                    <div class="flex items-center gap-4">
+                        <img src="./asset/image/test1.jpg?height=60&width=60" alt="Sarah Johnson" class="w-16 h-16 rounded-full object-cover">
+                        <div>
+                            <h3 class="font-semibold text-lg">Sarah Johnson</h3>
+                            <p class="text-gray-600">Regular Customer</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="relative h-[400px] rounded-2xl overflow-hidden">
+                    <img src="./asset/image/test1.jpg?height=400&width=500" alt="Customer using JumandiGas service" class="w-full h-full object-cover">
+                </div>
             </div>
         </div>
 
-        
+        <!-- Testimonials Grid -->
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Testimonial Card 1 -->
+            <div class="testimonial-card bg-white p-6 rounded-2xl shadow-lg">
+                <div class="flex items-center gap-4 mb-4">
+                    <img src="/placeholder.svg?height=50&width=50" alt="John Doe" class="w-12 h-12 rounded-full object-cover">
+                    <div>
+                        <h3 class="font-semibold">John Doe</h3>
+                        <p class="text-sm text-gray-600">Lagos, Nigeria</p>
+                    </div>
+                </div>
+                <p class="text-gray-700">
+                    "The delivery is always on time, and the staff is very professional. Great service!"
+                </p>
+                <div class="mt-4 text-primary">
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                </div>
+            </div>
+
+            <!-- Testimonial Card 2 -->
+            <div class="testimonial-card bg-white p-6 rounded-2xl shadow-lg">
+                <div class="flex items-center gap-4 mb-4">
+                    <img src="/placeholder.svg?height=50&width=50" alt="Mary Smith" class="w-12 h-12 rounded-full object-cover">
+                    <div>
+                        <h3 class="font-semibold">Mary Smith</h3>
+                        <p class="text-sm text-gray-600">Ikeja, Lagos</p>
+                    </div>
+                </div>
+                <p class="text-gray-700">
+                    "The app is so easy to use, and the delivery is always quick. Highly recommended!"
+                </p>
+                <div class="mt-4 text-primary">
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                </div>
+            </div>
+
+            <!-- Testimonial Card 3 -->
+            <div class="testimonial-card bg-white p-6 rounded-2xl shadow-lg">
+                <div class="flex items-center gap-4 mb-4">
+                    <img src="/placeholder.svg?height=50&width=50" alt="David Wilson" class="w-12 h-12 rounded-full object-cover">
+                    <div>
+                        <h3 class="font-semibold">David Wilson</h3>
+                        <p class="text-sm text-gray-600">Lekki, Lagos</p>
+                    </div>
+                </div>
+                <p class="text-gray-700">
+                    "Safe, reliable, and convenient. JumandiGas has made my life easier!"
+                </p>
+                <div class="mt-4 text-primary">
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Call to Action -->
+        <div class="text-center mt-16">
+            <a href="#" class="bg-primary text-white px-8 py-3 rounded-full hover:bg-orange-700 inline-block">
+                Share Your Experience
+            </a>
+        </div>
     </main>
 
     <!-- Footer -->
@@ -163,7 +228,7 @@ $userRole = $_SESSION['role'] ?? null; // Get user role if logged in
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                 <!-- Logo Column -->
                 <div>
-                <img src="./asset/image/logos.png" alt="City Logo" class="w-20 h-10 object-contain">
+                    <img src="./asset/image/logos.png" alt="JumandiGas" class="h-12 mb-4">
                 </div>
 
                 <!-- Company Column -->

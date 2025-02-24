@@ -167,9 +167,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             <h3 class="font-semibold">Cylinder Exchange</h3>
                         </div>
                        <select type="text" name="exchange" required class="w-full p-2 border rounded mb-2">
-                        <option value="">Select exchange</option>
-                        <option value="pick">Pick</option>
-                        <option value="drop">Drop</option>
+                        <option value="">Select</option>
+                        <option value="exchange">Exchange</option>
+                        <option value="pick return">Pick Return</option>
                        </select>
                     </div>
 
