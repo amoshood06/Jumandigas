@@ -12,7 +12,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
 $allowed_pages = [
     "user" => ["index.php"],
     "vendor" => ["index.php", "vendor-order-management.php", "test.php", "accept_order.php", "assign_rider.php"],
-    "rider" => ["index.php"]
+    "rider" => ["index.php", "accept_delivery.php", "mark_delivered.php", "rider_dashboard.php"]
 ];
 
 if (!in_array($current_page, $allowed_pages[$role])) {
