@@ -2,16 +2,28 @@
 session_start();
 require '../db/db.php';
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Validate user session
-    if (!isset($_SESSION['user_id'])) {
-        echo json_encode(["status" => "error", "message" => "User not logged in"]);
-        exit;
-    }
+// Check if user is logged in
+if (!isset($_SESSION['user_id'])) {
+    header("Location: ../login.php");
+    exit();
+}
 
-    $user_id = $_SESSION['user_id'];
-    $amount = $_POST['depositAmount'];
-    $payment_method = $_POST['paymentMethod'];
+$user_id = $_SESSION['user_id'];
+
+// Fetch user's full name
+$stmt = $pdo->prepare("SELECT full_name FROM users WHERE id = ?");
+$stmt->execute([$user_id]);
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+// Check if user data exists
+$full_name = $user ? htmlspecialchars($user['full_name']) : "Unknown User";
+?>
+
+
+<?php
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $amount = isset($_POST['depositAmount']) ? floatval($_POST['depositAmount']) : 0;
+    $payment_method = isset($_POST['paymentMethod']) ? trim($_POST['paymentMethod']) : '';
 
     // Validate input
     if ($amount < 100) {
@@ -19,7 +31,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit;
     }
 
+    if (empty($payment_method)) {
+        echo json_encode(["status" => "error", "message" => "Payment method is required"]);
+        exit;
+    }
+
     try {
+        // Begin transaction
+        $pdo->beginTransaction();
+
         // Insert deposit record
         $stmt = $pdo->prepare("INSERT INTO deposits (user_id, amount, payment_method, status) VALUES (?, ?, ?, 'successful')");
         $stmt->execute([$user_id, $amount, $payment_method]);
@@ -28,23 +48,33 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $updateBalance = $pdo->prepare("UPDATE users SET balance = balance + ? WHERE id = ?");
         $updateBalance->execute([$amount, $user_id]);
 
-        // Fetch updated balance and currency
-        $balanceQuery = $pdo->prepare("SELECT balance, currency FROM users WHERE id = ?");
+        // Fetch updated balance, currency, and username
+        $balanceQuery = $pdo->prepare("SELECT full_name, balance, currency FROM users WHERE id = ?");
         $balanceQuery->execute([$user_id]);
         $user = $balanceQuery->fetch(PDO::FETCH_ASSOC);
 
-        // Return response
+        if (!$user) {
+            throw new Exception("User not found");
+        }
+
+        // Commit transaction
+        $pdo->commit();
+
+        // Return response including the username
         echo json_encode([
-            "status" => "success", 
+            "status" => "success",
             "message" => "Deposit successful",
-            "balance" => number_format($user['balance'], 2), 
-            "currency" => $user['currency']
+            "username" => htmlspecialchars($user['full_name']), // Include username
+            "balance" => number_format($user['balance'], 2),
+            "currency" => htmlspecialchars($user['currency']) // Prevent XSS
         ]);
-    } catch (PDOException $e) {
-        echo json_encode(["status" => "error", "message" => "Database error: " . $e->getMessage()]);
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        echo json_encode(["status" => "error", "message" => "Error: " . $e->getMessage()]);
     }
 }
 ?>
+
 
 
 
@@ -80,7 +110,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         <div class="text-white">
             <p class="text-sm">User Account</p>
-            <p class="text-2xl font-bold">John Doe</p>
+            <p class="text-2xl font-bold"><?= $full_name ?></p>
         </div>
         <a href="logout.php">
             <button class="bg-gray-200 px-6 py-2 rounded-full font-bold">Logout</button>
@@ -102,19 +132,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     </div>
 
                     <div class="flex-grow overflow-y-auto">
-                        <div class="flex flex-col items-center my-8">
-                            <img src="/placeholder.svg?height=100&width=100" alt="User Profile" class="rounded-full w-24 h-24 mb-4">
-                            <h2 class="text-xl font-semibold">John Doe</h2>
-                            <p class="text-sm text-gray-500">User ID: U12345</p>
-                        </div>
+                        
                         
                         <nav class="space-y-2 px-4">
-                            <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Dashboard</a>
-                            <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Order Gas</a>
-                            <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Order History</a>
-                            <a href="#" class="block p-3 bg-[#ff6b00] text-white rounded-lg">Deposit</a>
-                            <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Settings</a>
-                        </nav>
+    <a href="index.php" class="block p-3 bg-[#ff6b00] text-white rounded-lg">Home</a>
+    <a href="user-deposit.php" class="block p-3 hover:bg-orange-100 rounded-lg">Deposit</a>
+    <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Buy Cylinder</a>
+    
+    <!-- Order Gas Dropdown -->
+    <div class="relative group">
+        <button class="block w-full text-left p-3 hover:bg-orange-100 rounded-lg">Order Gas</button>
+        <div class="absolute hidden group-hover:block bg-white shadow-md rounded-lg mt-1 w-48">
+            <a href="order-page.php" class="block p-3 hover:bg-orange-100">New Order</a>
+            <a href="order-history.php" class="block p-3 hover:bg-orange-100">Order History</a>
+        </div>
+    </div>
+
+    <a href="user-complaint.php" class="block p-3 hover:bg-orange-100 rounded-lg">Complain</a>
+    <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Setting</a>
+</nav>
+
                     </div>
                 </div>
             </div>

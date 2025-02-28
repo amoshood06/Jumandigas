@@ -35,9 +35,30 @@ if (!isset($_SESSION['user_id'])) {
         </button>
         <img src="../asset/image/logos.png" alt="Jumandi Gas Logo" class="h-12 hidden lg:block">
         <div class="text-white">
-            <p class="text-sm">User Account</p>
-            <p class="text-2xl font-bold">John Doe</p>
+            <p class="text-sm">Wallet</p>
+            <p class="text-2xl font-bold">
+            <span id="currencySymbol"></span> 
+            <span id="currentBalance">0.00</span>
+            </p>
+            
         </div>
+        <script>
+                    document.addEventListener("DOMContentLoaded", function() {
+                        fetchBalance();
+                    });
+
+                    function fetchBalance() {
+                        fetch("fetch_balance.php") // Create a new file to get balance
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === "success") {
+                                document.getElementById("currentBalance").innerText = data.balance;
+                                document.getElementById("currencySymbol").innerText = data.currency;
+                            }
+                        })
+                        .catch(error => console.error("Error fetching balance:", error));
+                    }
+                </script>
         <a href="logout.php">
             <button class="bg-gray-200 px-6 py-2 rounded-full font-bold">Logout</button>
         </a>
@@ -57,15 +78,24 @@ if (!isset($_SESSION['user_id'])) {
                     </div>
 
                     <div class="flex-grow overflow-y-auto">
-                        <nav class="space-y-2 px-4">
-                            <a href="index.php" class="block p-3 hover:bg-orange-100 rounded-lg">Dashboard</a>
-                            <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Buy Cylinder</a>
-                            <a href="order-page.php" class="block p-3 hover:bg-orange-100 rounded-lg">Order Gas</a>
-                            <a href="user-order-history.php" class="block p-3 hover:bg-orange-100 rounded-lg">Order Gas History</a>
-                            <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Deposit</a>
-                            <a href="user-complaint.php" class="block p-3 bg-[#ff6b00] text-white rounded-lg">Complaints</a>
-                            <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Settings</a>
-                        </nav>
+                    <nav class="space-y-2 px-4">
+    <a href="index.php" class="block p-3 bg-[#ff6b00] text-white rounded-lg">Home</a>
+    <a href="user-deposit.php" class="block p-3 hover:bg-orange-100 rounded-lg">Deposit</a>
+    <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Buy Cylinder</a>
+    
+    <!-- Order Gas Dropdown -->
+    <div class="relative group">
+        <button class="block w-full text-left p-3 hover:bg-orange-100 rounded-lg">Order Gas</button>
+        <div class="absolute hidden group-hover:block bg-white shadow-md rounded-lg mt-1 w-48">
+            <a href="order-page.php" class="block p-3 hover:bg-orange-100">New Order</a>
+            <a href="order-history.php" class="block p-3 hover:bg-orange-100">Order History</a>
+        </div>
+    </div>
+
+    <a href="user-complaint.php" class="block p-3 hover:bg-orange-100 rounded-lg">Complain</a>
+    <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Setting</a>
+</nav>
+
                     </div>
                 </div>
             </div>

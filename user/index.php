@@ -1,7 +1,7 @@
 <?php
-// Start the session before any output
-// Include authentication check
+// Start session and include authentication
 require_once "../auth_check.php";
+require '../db/db.php'; // Include database connection
 
 // Check if the user is logged in and their role is 'user'
 if ($_SESSION['role'] != 'user') {
@@ -9,22 +9,30 @@ if ($_SESSION['role'] != 'user') {
     exit();
 }
 
-function isLoggedIn() {
-    // Check if the session has the user_id set (user is logged in)
-    return isset($_SESSION['user_id']);
-}
+// Pagination variables
+$limit = 5; // Number of records per page
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$offset = ($page - 1) * $limit;
 
-function getUserLocation() {
-    // Assuming user country and state are stored in session after login
-    if (isset($_SESSION['country']) && isset($_SESSION['state'])) {
-        return [
-            'country' => $_SESSION['country'],
-            'state' => $_SESSION['state']
-        ];
-    }
-    return null; // Return null if location information is not available
-}
+// Fetch total records count
+$user_id = $_SESSION['user_id'];
+$stmt = $pdo->prepare("SELECT COUNT(*) FROM orders WHERE user_id = ?");
+$stmt->execute([$user_id]);
+$total_records = $stmt->fetchColumn();
+$total_pages = ceil($total_records / $limit);
+
+// Fetch orders with pagination (Fixing the LIMIT and OFFSET issue)
+$query = "SELECT cylinder_type AS Type, total_price AS Amount, tracking_id AS `Transaction ID`, created_at AS `Date / Time`
+          FROM orders 
+          WHERE user_id = ? 
+          ORDER BY created_at DESC 
+          LIMIT $limit OFFSET $offset";
+
+$stmt = $pdo->prepare($query);
+$stmt->execute([$user_id]); // Only binding user_id
+$orders = $stmt->fetchAll();
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -60,7 +68,7 @@ function getUserLocation() {
         <div class="text-white">
             <p class="text-sm">Wallet</p>
             <p class="text-2xl font-bold">
-            <span id="currencySymbol">₦</span> 
+            <span id="currencySymbol"></span> 
             <span id="currentBalance">0.00</span>
             </p>
             
@@ -104,25 +112,31 @@ function getUserLocation() {
                     </div>
 
                     <div class="flex-grow overflow-y-auto">
-                        <div class="flex flex-col items-center my-8">
-                            <img src="/placeholder.svg?height=100&width=100" alt="Profile" class="rounded-full w-24 h-24 mb-4">
-                        </div>
-                        
+                                             
                         <nav class="space-y-2 px-4">
-                            <a href="index.php" class="block p-3 bg-[#ff6b00] text-white rounded-lg">Home</a>
-                            <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Deposit</a>
-                            <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Buy Cylinder</a>
-                            <a href="order-page.php" class="block p-3 hover:bg-orange-100 rounded-lg">Order Gas</a>
-                            <a href="user-order-history.php" class="block p-3 hover:bg-orange-100 rounded-lg">Order Gas History</a>
-                            <a href="user-complaint.php" class="block p-3 hover:bg-orange-100 rounded-lg">Complain</a>
-                            <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Setting</a>
-                        </nav>
+    <a href="index.php" class="block p-3 bg-[#ff6b00] text-white rounded-lg">Home</a>
+    <a href="user-deposit.php" class="block p-3 hover:bg-orange-100 rounded-lg">Deposit</a>
+    <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Buy Cylinder</a>
+    
+    <!-- Order Gas Dropdown -->
+    <div class="relative group">
+        <button class="block w-full text-left p-3 hover:bg-orange-100 rounded-lg">Order Gas</button>
+        <div class="absolute hidden group-hover:block bg-white shadow-md rounded-lg mt-1 w-48">
+            <a href="order-page.php" class="block p-3 hover:bg-orange-100">New Order</a>
+            <a href="order-history.php" class="block p-3 hover:bg-orange-100">Order History</a>
+        </div>
+    </div>
+
+    <a href="user-complaint.php" class="block p-3 hover:bg-orange-100 rounded-lg">Complain</a>
+    <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Setting</a>
+</nav>
+
 
                         <!-- Quick Action Items - visible only on mobile -->
                         <div class="lg:hidden mt-8 px-4">
                             <h3 class="text-lg font-semibold mb-4">Quick Actions</h3>
                             <div class="grid grid-cols-2 gap-4">
-                                <a href="#" class="bg-[#ff6b00] p-4 rounded-lg text-white text-center">
+                                <a href="user-deposit.php" class="bg-[#ff6b00] p-4 rounded-lg text-white text-center">
                                     <div class="mb-2">⬇️</div>
                                     <div>Deposit</div>
                                 </a>
@@ -171,48 +185,37 @@ function getUserLocation() {
 
                 <!-- Transaction Table -->
                 <div class="bg-gray-200 rounded-lg overflow-x-auto">
-                    <table class="w-full">
-                        <thead class="bg-[#ff6b00] text-white">
-                            <tr>
-                                <th class="p-2 lg:p-4 text-left">Type</th>
-                                <th class="p-2 lg:p-4 text-left">Amount</th>
-                                <th class="p-2 lg:p-4 text-left hidden sm:table-cell">Transaction id</th>
-                                <th class="p-2 lg:p-4 text-left hidden md:table-cell">Date / Time</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr class="border-b border-gray-300">
-                                <td class="p-2 lg:p-4">Deposit</td>
-                                <td class="p-2 lg:p-4">N5000</td>
-                                <td class="p-2 lg:p-4 hidden sm:table-cell">TNX129309E</td>
-                                <td class="p-2 lg:p-4 hidden md:table-cell">May, 17/12:00AM</td>
-                            </tr>
-                            <tr class="border-b border-gray-300">
-                                <td class="p-2 lg:p-4">1kg</td>
-                                <td class="p-2 lg:p-4">N5000</td>
-                                <td class="p-2 lg:p-4 hidden sm:table-cell">TNX129309E</td>
-                                <td class="p-2 lg:p-4 hidden md:table-cell">May, 17/12:00AM</td>
-                            </tr>
-                            <tr class="border-b border-gray-300">
-                                <td class="p-2 lg:p-4">5kg</td>
-                                <td class="p-2 lg:p-4">N5000</td>
-                                <td class="p-2 lg:p-4 hidden sm:table-cell">TNX129309E</td>
-                                <td class="p-2 lg:p-4 hidden md:table-cell">May, 17/12:00AM</td>
-                            </tr>
-                            <tr>
-                                <td class="p-2 lg:p-4">Cylinder - 1kg</td>
-                                <td class="p-2 lg:p-4">N5000</td>
-                                <td class="p-2 lg:p-4 hidden sm:table-cell">TNX129309E</td>
-                                <td class="p-2 lg:p-4 hidden md:table-cell">May, 17/12:00AM</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Pagination -->
+    <table class="w-full">
+        <thead class="bg-[#ff6b00] text-white">
+            <tr>
+                <th class="p-2 lg:p-4 text-left">Type</th>
+                <th class="p-2 lg:p-4 text-left">Amount</th>
+                <th class="p-2 lg:p-4 text-left hidden sm:table-cell">Transaction ID</th>
+                <th class="p-2 lg:p-4 text-left hidden md:table-cell">Date / Time</th>
+            </tr>
+        </thead>
+        <tbody>
+        <?php foreach ($orders as $order) { ?>
+            <tr class="border-b border-gray-300">
+                <td class="p-2 lg:p-4"><?= htmlspecialchars($order['Type']) ?></td>
+                <td class="p-2 lg:p-4"><?= htmlspecialchars($order['Amount']) ?></td>
+                <td class="p-2 lg:p-4 hidden sm:table-cell"><?= htmlspecialchars($order['Transaction ID']) ?></td>
+                <td class="p-2 lg:p-4 hidden md:table-cell"><?= htmlspecialchars($order['Date / Time']) ?></td>
+            </tr>
+        <?php } ?>
+        </tbody>
+    </table>
+</div>
+                <!-- Pagination Controls -->
                 <div class="flex justify-center gap-4 mt-6">
-                    <button class="bg-[#ff6b00] text-white px-4 py-2 rounded-lg text-sm">←</button>
-                    <button class="bg-[#ff6b00] text-white px-4 py-2 rounded-lg text-sm">→</button>
+                    <?php if ($page > 1): ?>
+                        <a href="?page=<?= $page - 1 ?>" class="bg-[#ff6b00] text-white px-4 py-2 rounded-lg text-sm">← Prev</a>
+                    <?php endif; ?>
+
+                    <?php if ($page < $total_pages): ?>
+                        <a href="?page=<?= $page + 1 ?>" class="bg-[#ff6b00] text-white px-4 py-2 rounded-lg text-sm">Next →</a>
+                    <?php endif; ?>
+                </div>
                 </div>
             </div>
         </div>

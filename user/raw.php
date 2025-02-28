@@ -47,14 +47,24 @@
                     </div>
 
                     <div class="flex-grow overflow-y-auto">
-                        <nav class="space-y-2 px-4">
-                            <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Dashboard</a>
-                            <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Order Gas</a>
-                            <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Order History</a>
-                            <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Deposit</a>
-                            <a href="#" class="block p-3 bg-[#ff6b00] text-white rounded-lg">Complaints</a>
-                            <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Settings</a>
-                        </nav>
+                    <nav class="space-y-2 px-4">
+    <a href="index.php" class="block p-3 bg-[#ff6b00] text-white rounded-lg">Home</a>
+    <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Deposit</a>
+    <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Buy Cylinder</a>
+    
+    <!-- Order Gas Dropdown -->
+    <div class="relative group">
+        <button class="block w-full text-left p-3 hover:bg-orange-100 rounded-lg">Order Gas</button>
+        <div class="absolute hidden group-hover:block bg-white shadow-md rounded-lg mt-1 w-48">
+            <a href="order-page.php" class="block p-3 hover:bg-orange-100">New Order</a>
+            <a href="order-history.php" class="block p-3 hover:bg-orange-100">Order History</a>
+        </div>
+    </div>
+
+    <a href="user-complaint.php" class="block p-3 hover:bg-orange-100 rounded-lg">Complain</a>
+    <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Setting</a>
+</nav>
+
                     </div>
                 </div>
             </div>

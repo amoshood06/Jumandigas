@@ -58,6 +58,8 @@ $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                     <input type="hidden" name="order_id" value="<?php echo $order['id']; ?>">
                                     <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded">I Have Delivered</button>
                                 </form>
+                            <?php } elseif ($order['status'] == 'completed') { ?>
+                                <span class="text-gray-500">Order Completed</span>
                             <?php } ?>
                         </td>
                     </tr>

@@ -15,24 +15,29 @@ $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
 $stmt->execute([$user_id]);
 $user = $stmt->fetch();
 
-// Fetch vendors in the same location
+// Fetch vendors in the same location (same city)
 $stmt = $pdo->prepare("SELECT * FROM users WHERE role = 'vendor' AND country = ? AND state = ? AND city = ?");
 $stmt->execute([$user['country'], $user['state'], $user['city']]);
 $vendors = $stmt->fetchAll();
-
 // Fetch gas price per kg
 $stmt = $pdo->prepare("SELECT price FROM locations WHERE country = ? AND state = ?");
 $stmt->execute([$user['country'], $user['state']]);
 $location = $stmt->fetch();
-$price_per_kg = $location ? $location['price'] : 0; // Renamed variable
+$price_per_kg = $location ? $location['price'] : 0; // Ensure it has a default value
+
+// Fetch bike price based on user's location
+$stmt = $pdo->prepare("SELECT price FROM bike WHERE country = ? AND state = ? AND city = ?");
+$stmt->execute([$user['country'], $user['state'], $user['city']]);
+$location = $stmt->fetch();
+$bike_price = $location ? $location['price'] : 0; // Get the bike price
 
 // Handle Order Submission
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $cylinder_type = $_POST['cylinder_type'];
+    $cylinder_type = $_POST['cylinder_type']; // Capture cylinder type
     $exchange = $_POST['exchange'];
     $amount_kg = $_POST['amount_kg'];
     $vendor_id = $_POST['vendor_id'];
-    $total_price = $amount_kg * $price_per_kg; // Correct variable
+    $total_price = $amount_kg * $price_per_kg;
     $currency = $user['currency'];
 
     // Check if user has enough balance
@@ -44,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // Generate tracking ID
         $tracking_id = "TRK" . strtoupper(uniqid());
 
-        // Insert order
+        // Insert order with cylinder_type
         $stmt = $pdo->prepare("INSERT INTO orders (user_id, vendor_id, cylinder_type, exchange, amount_kg, total_price, currency, tracking_id) 
                                VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
         $stmt->execute([$user_id, $vendor_id, $cylinder_type, $exchange, $amount_kg, $total_price, $currency, $tracking_id]);
@@ -55,6 +60,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 ?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -87,8 +94,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         <div class="text-white">
             <p class="text-sm">Wallet</p>
-            <p class="text-2xl font-bold">N20,000</p>
+            <p class="text-2xl font-bold">
+            <span id="currencySymbol"></span> 
+            <span id="currentBalance">0.00</span>
+            </p>
+            
         </div>
+        <script>
+                    document.addEventListener("DOMContentLoaded", function() {
+                        fetchBalance();
+                    });
+
+                    function fetchBalance() {
+                        fetch("fetch_balance.php") // Create a new file to get balance
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === "success") {
+                                document.getElementById("currentBalance").innerText = data.balance;
+                                document.getElementById("currencySymbol").innerText = data.currency;
+                            }
+                        })
+                        .catch(error => console.error("Error fetching balance:", error));
+                    }
+                </script>
         <a href="logout.php">
             <button class="bg-gray-200 px-6 py-2 rounded-full font-bold">Logout</button>
         </a>
@@ -99,19 +127,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <div class="flex gap-6 relative">
             <!-- Sidebar - Mobile Responsive -->
             <div id="sidebar" class="fixed inset-y-0 left-0 lg:relative lg:block bg-white z-50 w-64 h-screen overflow-y-auto transition-transform duration-300 ease-in-out transform -translate-x-full lg:translate-x-0">
-                <div class="flex flex-col items-center my-8">
-                    <img src="/placeholder.svg?height=100&width=100" alt="Profile" class="rounded-full w-24 h-24 mb-4">
-                </div>
                 
                 <nav class="space-y-2 px-4">
                     <a href="index.php" class="block p-3 bg-[#ff6b00] text-white rounded-lg">Home</a>
-                    <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Deposit</a>
+                    <a href="user-deposit.php" class="block p-3 hover:bg-orange-100 rounded-lg">Deposit</a>
                     <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Buy Cylinder</a>
-                    <a href="order-page.php" class="block p-3 hover:bg-orange-100 rounded-lg">Order Gas</a>
-                    <a href="order-page.php" class="block p-3 hover:bg-orange-100 rounded-lg">Order Gas History</a>
+                    
+                    <!-- Order Gas Dropdown -->
+                    <div class="relative group">
+                        <button class="block w-full text-left p-3 hover:bg-orange-100 rounded-lg">Order Gas</button>
+                        <div class="absolute hidden group-hover:block bg-white shadow-md rounded-lg mt-1 w-48">
+                            <a href="order-page.php" class="block p-3 hover:bg-orange-100">New Order</a>
+                            <a href="order-history.php" class="block p-3 hover:bg-orange-100">Order History</a>
+                        </div>
+                    </div>
+
                     <a href="user-complaint.php" class="block p-3 hover:bg-orange-100 rounded-lg">Complain</a>
                     <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Setting</a>
                 </nav>
+
 
                 <!-- Quick Action Items - visible only on mobile -->
                 <div class="lg:hidden mt-8 px-4">
@@ -172,7 +206,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <option value="pick return">Pick Return</option>
                        </select>
                     </div>
-
+                    
+                    
                     <!-- amount of kg -->
                     <div class="flex flex-col p-4 bg-white rounded-lg shadow">
                         <div>
@@ -218,11 +253,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </div>
     </main>
     <script>
+        // function calculateTotal() {
+        //     let amount = document.getElementById("amount_kg").value;
+        //     let price = document.getElementById("price").innerText;
+        //     document.getElementById("total_price").innerText = (amount * price).toFixed(2);
+        // }
         function calculateTotal() {
-            let amount = document.getElementById("amount_kg").value;
-            let price = document.getElementById("price").innerText;
-            document.getElementById("total_price").innerText = (amount * price).toFixed(2);
-        }
+    let amount = document.getElementById("amount_kg").value;
+    let price = parseFloat(document.getElementById("price").innerText) || 0; // Ensure price is a number
+    document.getElementById("total_price").innerText = (amount * price).toFixed(2);
+}
+
     </script>
     <script>
         // Mobile menu functionality (same as in your original HTML)
