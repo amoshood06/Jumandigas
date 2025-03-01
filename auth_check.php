@@ -10,7 +10,7 @@ $role = $_SESSION['role'];
 $current_page = basename($_SERVER['PHP_SELF']);
 
 $allowed_pages = [
-    "user" => ["index.php"],
+    "user" => ["index.php", "order-page.php"],
     "vendor" => ["index.php", "text.php", "vendor-report.php", "vendor-order-management.php", "test.php", "accept_order.php", "assign_rider.php", "reject_order.php"],
     "rider" => ["index.php", "accept_delivery.php", "mark_delivered.php", "rider_dashboard.php"]
 ];
