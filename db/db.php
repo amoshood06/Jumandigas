@@ -12,7 +12,7 @@ $password = "ks2bs8a8ak"; // Change to your database password
 
 try {
     // Create a new PDO connection
-    $pdo = new PDO("mysql:hostgit =$host;dbname=$dbname;charset=utf8", $username, $password);
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
     
     // Set error mode to exceptionsi
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
