@@ -91,6 +91,7 @@ $riders = $stmt_riders->fetchAll(PDO::FETCH_ASSOC);
                                             
                         <nav class="space-y-2 px-4">
                             <a href="index.php" class="block p-3 hover:bg-orange-100 rounded-lg">Dashboard</a>
+                            <a href="withdrawal.php" class="block p-3 hover:bg-orange-100 rounded-lg">Withdrawal</a>
                             <a href="vendor-order-management.php" class="block p-3 bg-[#ff6b00] text-white rounded-lg">Orders</a>
                             <a href="vendor-transactions.php" class="block p-3 hover:bg-orange-100 rounded-lg">Transactions</a>
                             <a href="vendor-report.php" class="block p-3 hover:bg-orange-100 rounded-lg">Reports</a>

@@ -116,6 +116,7 @@ $orders = $stmt->fetchAll();
                         <nav class="space-y-2 px-4">
     <a href="index.php" class="block p-3 bg-[#ff6b00] text-white rounded-lg">Home</a>
     <a href="user-deposit.php" class="block p-3 hover:bg-orange-100 rounded-lg">Deposit</a>
+    <a href="item-tracking.php" class="block p-3 hover:bg-orange-100 rounded-lg">Track</a>
     <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Buy Cylinder</a>
     
     <!-- Order Gas Dropdown -->
@@ -126,7 +127,7 @@ $orders = $stmt->fetchAll();
             <a href="order-history.php" class="block p-3 hover:bg-orange-100">Order History</a>
         </div>
     </div>
-
+    <a href="withdrawal.php" class="block p-3 hover:bg-orange-100 rounded-lg">Withdrawal</a>
     <a href="user-complaint.php" class="block p-3 hover:bg-orange-100 rounded-lg">Complain</a>
     <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Setting</a>
 </nav>

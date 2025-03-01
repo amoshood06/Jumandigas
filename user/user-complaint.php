@@ -91,7 +91,8 @@ if (!isset($_SESSION['user_id'])) {
             <a href="order-history.php" class="block p-3 hover:bg-orange-100">Order History</a>
         </div>
     </div>
-
+    
+    <a href="withdrawal.php" class="block p-3 hover:bg-orange-100 rounded-lg">Withdrawal</a>
     <a href="user-complaint.php" class="block p-3 hover:bg-orange-100 rounded-lg">Complain</a>
     <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Setting</a>
 </nav>

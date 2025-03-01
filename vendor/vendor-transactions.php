@@ -52,18 +52,14 @@
                     </div>
 
                     <div class="flex-grow overflow-y-auto">
-                        <div class="flex flex-col items-center my-8">
-                            <img src="/placeholder.svg?height=100&width=100" alt="Vendor Profile" class="rounded-full w-24 h-24 mb-4">
-                            <h2 class="text-xl font-semibold">Vendor Name</h2>
-                        </div>
                         
                         <nav class="space-y-2 px-4">
-                            <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Dashboard</a>
-                            <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Inventory</a>
-                            <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Orders</a>
-                            <a href="#" class="block p-3 bg-[#ff6b00] text-white rounded-lg">Transactions</a>
-                            <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Reports</a>
-                            <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Settings</a>
+                            <a href="index.php" class="block p-3 hover:bg-orange-100 rounded-lg">Dashboard</a>
+                            <a href="withdrawal.php" class="block p-3 hover:bg-orange-100 rounded-lg">Withdrawal</a>
+                            <a href="vendor-order-management.php" class="block p-3 hover:bg-orange-100 rounded-lg">Orders</a>
+                            <a href="vendor-transactions.php" class="block p-3 bg-[#ff6b00] text-white rounded-lg">Transactions</a>
+                            <a href="vendor-report.php" class="block p-3 hover:bg-orange-100 rounded-lg">Reports</a>
+                            <a href="vendor-settings.php" class="block p-3 hover:bg-orange-100 rounded-lg">Settings</a>
                         </nav>
                     </div>
                 </div>
