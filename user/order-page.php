@@ -1,5 +1,5 @@
 <?php 
-session_start();
+require_once "../auth_check.php";
 require '../db/db.php'; // Include database connection
 
 // Ensure user is logged in
