@@ -273,5 +273,37 @@
             }
         });
     </script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    let inactivityTime = 0; // Time in seconds
+
+    function resetTimer() {
+        inactivityTime = 0; // Reset the timer when user interacts
+    }
+
+    // Listen for user activity
+    $(document).on('mousemove keypress click scroll', function () {
+        resetTimer();
+    });
+
+    // Check inactivity every second
+    setInterval(function () {
+        inactivityTime++;
+        if (inactivityTime >= 300) { // 300 seconds = 5 minutes
+            autoLogout();
+        }
+    }, 1000);
+
+    function autoLogout() {
+        $.post("logout.php", { ajax: true }, function (response) {
+            let data = JSON.parse(response);
+            if (data.status === "success") {
+                alert(data.message);
+                window.location.href = "../login.php"; // Redirect to login page
+            }
+        });
+    }
+</script>
+
 </body>
 </html>

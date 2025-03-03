@@ -45,7 +45,8 @@ require_once "auth_admin.php";
                     <li><a href="#" class="block py-2 px-4 rounded bg-orange-700">Dashboard</a></li>
                     <li><a href="#" class="block py-2 px-4 rounded hover:bg-orange-700">Orders</a></li>
                     <li><a href="#" class="block py-2 px-4 rounded hover:bg-orange-700">Customers</a></li>
-                    <li><a href="locations.php" class="block py-2 px-4 rounded hover:bg-orange-700">Location</a></li>
+                    <li><a href="locations.php" class="block py-2 px-4 rounded hover:bg-orange-700">Gas Price</a></li>
+                    <li><a href="bike.php" class="block py-2 px-4 rounded hover:bg-orange-700">Rider Price</a></li>
                     <li><a href="#" class="block py-2 px-4 rounded hover:bg-orange-700">Settings</a></li>
                     <li><a href="logout.php" class="block py-2 px-4 rounded hover:bg-orange-700">Login</a></li>
                 </ul>

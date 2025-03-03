@@ -1,9 +1,72 @@
+<?php 
+require_once "../auth_check.php";
+require '../db/db.php'; 
+
+if (!isset($_SESSION['user_id'])) {
+    echo json_encode(["status" => "error", "message" => "User not logged in"]);
+    exit();
+}
+
+$user_id = $_SESSION['user_id'];
+
+// Fetch user details
+$stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
+$stmt->execute([$user_id]);
+$user = $stmt->fetch();
+
+// Set default price per kg to avoid undefined variable error
+$price_per_kg = 0;
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $cylinder_type = $_POST['cylinder_type'];
+    $exchange = $_POST['exchange'];
+    $amount_kg = $_POST['amount_kg'];
+    $vendor_id = $_POST['vendor_id'];
+
+    // Fetch gas price per kg
+    $stmt = $pdo->prepare("SELECT price FROM locations WHERE country = ? AND state = ?");
+    $stmt->execute([$user['country'], $user['state']]);
+    $location = $stmt->fetch();
+    
+    // Ensure $price_per_kg is always set
+    if ($location) {
+        $price_per_kg = $location['price'];
+    } else {
+        $price_per_kg = 0; // Default value to avoid errors
+    }
+
+    // Calculate total price
+    $total_price = $amount_kg * $price_per_kg;
+    $currency = $user['currency'];
+
+    // Check user balance
+    if ($user['balance'] >= $total_price) {
+        // Deduct from user balance
+        $stmt = $pdo->prepare("UPDATE users SET balance = balance - ? WHERE id = ?");
+        $stmt->execute([$total_price, $user_id]);
+
+        // Generate tracking ID
+        $tracking_id = "TRK" . strtoupper(uniqid());
+
+        // Insert order
+        $stmt = $pdo->prepare("INSERT INTO orders (user_id, vendor_id, cylinder_type, exchange, amount_kg, total_price, currency, tracking_id) 
+                               VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$user_id, $vendor_id, $cylinder_type, $exchange, $amount_kg, $total_price, $currency, $tracking_id]);
+
+        echo json_encode(["status" => "success", "message" => "Order placed successfully!", "tracking_id" => $tracking_id]);
+    } else {
+        echo json_encode(["status" => "error", "message" => "Insufficient balance!"]);
+    }
+}
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jumandi Gas - User Complaints</title>
+    <title>Jumandi Gas - Order Page</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
@@ -20,14 +83,39 @@
 <body class="bg-[#ff6b00]">
     <!-- Header -->
     <header class="flex justify-between items-center p-4">
+        <!-- Mobile Menu Button -->
         <button id="menuButton" class="lg:hidden text-white p-2">
             <i class="fas fa-bars"></i>
         </button>
+
+        <!-- Logo - hidden on mobile, visible on desktop -->
         <img src="../asset/image/logos.png" alt="Jumandi Gas Logo" class="h-12 hidden lg:block">
+
         <div class="text-white">
-            <p class="text-sm">User Account</p>
-            <p class="text-2xl font-bold">John Doe</p>
+            <p class="text-sm">Wallet</p>
+            <p class="text-2xl font-bold">
+            <span id="currencySymbol"></span> 
+            <span id="currentBalance">0.00</span>
+            </p>
+            
         </div>
+        <script>
+                    document.addEventListener("DOMContentLoaded", function() {
+                        fetchBalance();
+                    });
+
+                    function fetchBalance() {
+                        fetch("fetch_balance.php") // Create a new file to get balance
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === "success") {
+                                document.getElementById("currentBalance").innerText = data.balance;
+                                document.getElementById("currencySymbol").innerText = data.currency;
+                            }
+                        })
+                        .catch(error => console.error("Error fetching balance:", error));
+                    }
+                </script>
         <a href="logout.php">
             <button class="bg-gray-200 px-6 py-2 rounded-full font-bold">Logout</button>
         </a>
@@ -36,89 +124,142 @@
     <!-- Main Content -->
     <main class="bg-white rounded-t-[2rem] min-h-screen p-4 lg:p-6 lg:ml-0">
         <div class="flex gap-6 relative">
-            <!-- Sidebar -->
+            <!-- Sidebar - Mobile Responsive -->
             <div id="sidebar" class="fixed inset-y-0 left-0 lg:relative lg:block bg-white z-50 w-64 h-screen overflow-y-auto transition-transform duration-300 ease-in-out transform -translate-x-full lg:translate-x-0">
-                <div class="flex flex-col h-full">
-                    <div class="lg:hidden flex justify-between items-center p-4 border-b">
-                        <img src="../asset/image/logo.png" alt="Jumandi Gas Logo" class="h-8">
-                        <button id="closeMenu" class="text-gray-500 hover:text-gray-700">
-                            <i class="fas fa-times"></i>
-                        </button>
+                
+                <nav class="space-y-2 px-4">
+                    <a href="index.php" class="block p-3 bg-[#ff6b00] text-white rounded-lg">Home</a>
+                    <a href="user-deposit.php" class="block p-3 hover:bg-orange-100 rounded-lg">Deposit</a>
+                    <a href="item-tracking.php" class="block p-3 hover:bg-orange-100 rounded-lg">Track</a>
+                    <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Buy Cylinder</a>
+                    
+                    <!-- Order Gas Dropdown -->
+                    <div class="relative group">
+                        <button class="block w-full text-left p-3 hover:bg-orange-100 rounded-lg">Order Gas</button>
+                        <div class="absolute hidden group-hover:block bg-white shadow-md rounded-lg mt-1 w-48">
+                            <a href="order-page.php" class="block p-3 hover:bg-orange-100">New Order</a>
+                            <a href="order-history.php" class="block p-3 hover:bg-orange-100">Order History</a>
+                        </div>
                     </div>
+                    <a href="withdrawal.php" class="block p-3 hover:bg-orange-100 rounded-lg">Withdrawal</a>
+                    <a href="user-complaint.php" class="block p-3 hover:bg-orange-100 rounded-lg">Complain</a>
+                    <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Setting</a>
+                </nav>
 
-                    <div class="flex-grow overflow-y-auto">
-                    <nav class="space-y-2 px-4">
-    <a href="index.php" class="block p-3 bg-[#ff6b00] text-white rounded-lg">Home</a>
-    <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Deposit</a>
-    <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Buy Cylinder</a>
-    
-    <!-- Order Gas Dropdown -->
-    <div class="relative group">
-        <button class="block w-full text-left p-3 hover:bg-orange-100 rounded-lg">Order Gas</button>
-        <div class="absolute hidden group-hover:block bg-white shadow-md rounded-lg mt-1 w-48">
-            <a href="order-page.php" class="block p-3 hover:bg-orange-100">New Order</a>
-            <a href="order-history.php" class="block p-3 hover:bg-orange-100">Order History</a>
-        </div>
-    </div>
 
-    <a href="user-complaint.php" class="block p-3 hover:bg-orange-100 rounded-lg">Complain</a>
-    <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Setting</a>
-</nav>
-
+                <!-- Quick Action Items - visible only on mobile -->
+                <div class="lg:hidden mt-8 px-4">
+                    <h3 class="text-lg font-semibold mb-4">Quick Actions</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <a href="#" class="bg-[#ff6b00] p-4 rounded-lg text-white text-center">
+                            <div class="mb-2">⬇️</div>
+                            <div>Deposit</div>
+                        </a>
+                        <a href="#" class="bg-[#ff6b00] p-4 rounded-lg text-white text-center">
+                            <div class="mb-2">🚚</div>
+                            <div>Orders Gas</div>
+                        </a>
+                        <a href="#" class="bg-[#ff6b00] p-4 rounded-lg text-white text-center">
+                            <div class="mb-2">🛒</div>
+                            <div>Buy Cylinder</div>
+                        </a>
+                        <a href="#" class="bg-[#ff6b00] p-4 rounded-lg text-white text-center">
+                            <div class="text-2xl font-bold">5</div>
+                            <div>Total Orders</div>
+                        </a>
                     </div>
                 </div>
+
+                <!-- Sidebar content (same as in your original HTML) -->
             </div>
 
             <!-- Overlay for mobile -->
             <div id="overlay" class="fixed inset-0 bg-black opacity-50 z-40 hidden lg:hidden"></div>
 
-            <!-- Complaint Content -->
-            <div class="flex-1 w-full">
-                <h1 class="text-2xl font-bold mb-6">Complaints</h1>
+            <!-- Order Page Content -->
+            <div class="flex-1">
+                <h1 class="text-2xl font-bold mb-6">Order Gas</h1>
+                <form method="POST">
+                <!-- Gas Options -->
+                <div class="flex flex-col gap-2">
+                    <!-- 1kg Gas Option -->
+                    <div class="flex flex-col p-4 bg-white rounded-lg shadow">
+                        <div>
+                            <h3 class="font-semibold">Your Cylinder</h3>
+                        </div>
+                       <select type="text" name="cylinder_type" required class="w-full p-2 border rounded mb-2">
+                        <option value="">Select cylinder</option>
+                        <option value="1kg">1kg</option>
+                        <option value="3kg">3kg</option>
+                        <option value="4kg">4kg</option>
+                       </select>
+                    </div>
+                    
+                    <!-- exchange Option -->
+                    <div class="flex flex-col p-4 bg-white rounded-lg shadow">
+                        <div>
+                            <h3 class="font-semibold">Cylinder Exchange</h3>
+                        </div>
+                       <select type="text" name="exchange" required class="w-full p-2 border rounded mb-2">
+                        <option value="">Select</option>
+                        <option value="exchange">Exchange</option>
+                        <option value="pick return">Pick Return</option>
+                       </select>
+                    </div>
+                    
+                    
+                    <!-- amount of kg -->
+                    <div class="flex flex-col p-4 bg-white rounded-lg shadow">
+                        <div>
+                            <h3 class="font-semibold">Amount of kg</h3>
+                        </div>
+                        
+                        <input type="number" name="amount_kg" id="amount_kg" required class="w-full p-2 border rounded mb-2" oninput="calculateTotal()">
+                        
+                    </div>
 
-                <!-- Complaint Form -->
-                <div class="bg-white shadow rounded-lg p-6 mb-6">
-                    <h2 class="text-xl font-semibold mb-4">Submit a Complaint</h2>
-                    <form id="complaintForm">
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Complaint Type</label>
-                            <select id="complaintType" required class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-[#ff6b00]">
-                                <option value="">Select a complaint type</option>
-                                <option value="delivery">Delivery Issue</option>
-                                <option value="product">Product Quality</option>
-                                <option value="service">Customer Service</option>
-                                <option value="billing">Billing Problem</option>
-                            </select>
+                        <!-- amount of kg -->
+                    <div class="flex flex-col p-4 bg-white rounded-lg shadow">
+                        <div>
+                            <h3 class="font-semibold">Select Vendor:</h3>
                         </div>
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                            <textarea id="complaintDescription" required rows="4" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-[#ff6b00]"></textarea>
-                        </div>
-                        <button type="submit" class="w-full px-4 py-2 bg-[#ff6b00] text-white rounded-md hover:bg-[#e05e00]">
-                            Submit Complaint
-                        </button>
-                    </form>
+                        <select id="vendorSelect" name="vendor_id" required>
+                            <option>Loading vendors...</option>
+                        </select>
+                        
+                    </div>
+                    
                 </div>
 
-                <!-- Complaint History -->
-                <div class="bg-white shadow rounded-lg p-6">
-                    <h2 class="text-xl font-semibold mb-4">Complaint History</h2>
-                    <table class="min-w-full border border-gray-300">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="border px-4 py-2">Date</th>
-                                <th class="border px-4 py-2">Type</th>
-                                <th class="border px-4 py-2">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="complaintTableBody"></tbody>
-                    </table>
+                <!-- Order Summary -->
+                <div class="mt-8 bg-[#ff6b00] text-white p-4 rounded-lg">
+                    <div class="flex justify-between items-center mb-4">
+                        <span>Price per Kg:</span>
+                        <span id="price"><?= $price_per_kg ?></span> <?= $user['currency'] ?>
+                    </div>
+                    <div class="flex justify-between items-center mb-4">
+                        <span>Total Cost:</span>
+                        <span id="total_price">0</span> <?= $user['currency'] ?>
+                    </div>
+                    <button type="submit" class="w-full bg-white text-[#ff6b00] py-2 rounded-lg font-semibold flex items-center justify-center">
+                        <i class="fas fa-shopping-cart mr-2"></i>
+                        Place Order
+                    </button>
                 </div>
+                </form>
             </div>
         </div>
     </main>
-
     <script>
+        function calculateTotal() {
+            let amountKg = document.getElementById('amount_kg').value;
+            let pricePerKg = <?php echo $price_per_kg; ?>;
+            let totalPrice = amountKg * pricePerKg;
+            document.getElementById('total_price').innerText = totalPrice.toFixed(2);
+        }
+    </script>
+    <script>
+        // Mobile menu functionality (same as in your original HTML)
         const menuButton = document.getElementById('menuButton');
         const closeButton = document.getElementById('closeMenu');
         const sidebar = document.getElementById('sidebar');
@@ -133,23 +274,140 @@
         closeButton.addEventListener('click', toggleMenu);
         overlay.addEventListener('click', toggleMenu);
 
-        document.getElementById('complaintForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const type = document.getElementById('complaintType').value;
-            const description = document.getElementById('complaintDescription').value;
-            const date = new Date().toLocaleDateString();
-            const tableBody = document.getElementById('complaintTableBody');
+        // Close menu when clicking a link (mobile)
+        const navLinks = sidebar.getElementsByTagName('a');
+        for (const link of navLinks) {
+            link.addEventListener('click', () => {
+                if (window.innerWidth < 1024) { // lg breakpoint
+                    toggleMenu();
+                }
+            });
+        }
 
-            const newRow = tableBody.insertRow();
-            newRow.innerHTML = `
-                <td class="border px-4 py-2">${date}</td>
-                <td class="border px-4 py-2">${type}</td>
-                <td class="border px-4 py-2 text-yellow-600">Pending</td>
-            `;
-
-            alert('Complaint submitted successfully!');
-            this.reset();
+        // Handle resize events
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 1024) { // lg breakpoint
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.add('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+            }
         });
     </script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    let inactivityTime = 0; // Time in seconds
+
+    function resetTimer() {
+        inactivityTime = 0; // Reset the timer when user interacts
+    }
+
+    // Listen for user activity
+    $(document).on('mousemove keypress click scroll', function () {
+        resetTimer();
+    });
+
+    // Check inactivity every second
+    setInterval(function () {
+        inactivityTime++;
+        if (inactivityTime >= 300) { // 300 seconds = 5 minutes
+            autoLogout();
+        }
+    }, 1000);
+
+    function autoLogout() {
+        $.post("logout.php", { ajax: true }, function (response) {
+            let data = JSON.parse(response);
+            if (data.status === "success") {
+                alert(data.message);
+                window.location.href = "../login.php"; // Redirect to login page
+            }
+        });
+    }
+</script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $("#orderForm").submit(function (event) {
+            event.preventDefault(); // Prevent form reload
+
+            $.ajax({
+                url: "order_page.php",
+                type: "POST",
+                data: $("#orderForm").serialize(),
+                dataType: "json",
+                success: function (response) {
+                    if (response.status === "success") {
+                        alert(response.message + " Tracking ID: " + response.tracking_id);
+                        window.location.href = "order-history.php"; // Redirect
+                    } else {
+                        alert(response.message);
+                    }
+                },
+                error: function () {
+                    alert("Error placing order. Please try again.");
+                }
+            });
+        });
+    });
+</script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    function loadVendors() {
+        $.ajax({
+            url: "fetch_vendors.php",
+            type: "GET",
+            dataType: "json",
+            success: function(response) {
+                if (response.status === "success") {
+                    let vendorSelect = $("#vendorSelect");
+                    vendorSelect.empty(); // Clear previous options
+                    response.vendors.forEach(function(vendor) {
+                        vendorSelect.append(`<option value="${vendor.id}">${vendor.full_name}</option>`);
+                    });
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function() {
+                alert("Error fetching vendors. Please try again.");
+            }
+        });
+    }
+
+    $(document).ready(function() {
+        loadVendors(); // Load vendors when the page loads
+    });
+</script>
+<script>
+    function loadVendors() {
+        $.ajax({
+            url: "fetch_vendors.php",
+            type: "GET",
+            dataType: "json",
+            success: function(response) {
+                if (response.status === "success") {
+                    let vendorSelect = $("#vendorSelect");
+                    vendorSelect.empty();
+                    response.vendors.forEach(function(vendor) {
+                        let stars = "⭐".repeat(Math.round(vendor.avg_rating));
+                        vendorSelect.append(`<option value="${vendor.id}">${vendor.full_name} (${stars})</option>`);
+                    });
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function() {
+                alert("Error fetching vendors. Please try again.");
+            }
+        });
+    }
+
+    $(document).ready(function() {
+        loadVendors();
+    });
+</script>
+
+
 </body>
 </html>

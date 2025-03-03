@@ -1,4 +1,4 @@
-<?php
+<?php 
 session_start();
 require_once "./db/db.php"; 
 
@@ -16,6 +16,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($user && password_verify($password, $user['password'])) {
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['role'] = $user['role'];
+
+        // **Update online status to 1 (Online)**
+        $updateStmt = $pdo->prepare("UPDATE users SET online = 1 WHERE id = ?");
+        $updateStmt->execute([$user['id']]);
 
         // Redirect based on role
         if ($user['role'] == 'user') {

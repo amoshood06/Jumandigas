@@ -16,9 +16,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['order_id'])) {
     $stmt = $pdo->prepare($sql);
     
     if ($stmt->execute(['order_id' => $order_id, 'rider_id' => $rider_id])) {
-        echo "<script>alert('You have accepted the delivery!'); window.location.href='rider_dashboard.php';</script>";
+        echo "<script>alert('You have accepted the delivery!'); window.location.href='index.php';</script>";
     } else {
-        echo "<script>alert('Failed to accept delivery. Try again.'); window.location.href='rider_dashboard.php';</script>";
+        echo "<script>alert('Failed to accept delivery. Try again.'); window.location.href='index.php';</script>";
     }
     exit();
 }

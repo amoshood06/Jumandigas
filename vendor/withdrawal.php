@@ -1,3 +1,23 @@
+<?php
+require_once "../auth_check.php"; // Ensure user is authenticated
+require_once "../db/db.php"; // Include the database connection
+
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'vendor') {
+    header("Location: ../login.php");
+    exit();
+}
+
+// Fetch recent withdrawals for the logged-in user
+$vendor_id = $_SESSION['user_id'] ?? null;
+$withdrawals = [];
+
+if ($vendor_id) {
+    $stmt = $pdo->prepare("SELECT amount, status, created_at FROM withdrawals WHERE user_id = ? ORDER BY created_at DESC LIMIT 5");
+    $stmt->execute([$vendor_id]);
+    $withdrawals = $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -86,85 +106,139 @@
             <!-- Balance Card -->
             <div class="bg-white p-6 rounded-2xl shadow-lg">
                 <h2 class="text-2xl font-semibold mb-4">Your Balance</h2>
-                <div class="text-4xl font-bold text-primary mb-4">₦150,000.00</div>
-                <p class="text-gray-600 mb-4">Last updated: <span id="lastUpdated">2023-07-15 14:30</span></p>
-                <button class="bg-gray-200 text-gray-700 px-4 py-2 rounded-full hover:bg-gray-300 transition duration-300" onclick="updateBalance()">
-                    <i class="fas fa-sync-alt mr-2"></i>Refresh Balance
-                </button>
-            </div>
+                <div class="text-4xl font-bold text-primary mb-4">
+                <span id="currencySymbol"></span> 
+            <span id="currentBalance">0.00</span>
+                </div>
+                <script>
+                    document.addEventListener("DOMContentLoaded", function() {
+                        fetchBalance();
+                    });
 
-            <!-- Withdrawal Form -->
-            <div class="bg-white p-6 rounded-2xl shadow-lg">
-                <h2 class="text-2xl font-semibold mb-4">Request Withdrawal</h2>
-                <form id="withdrawalForm" onsubmit="return false;">
-                    <div class="mb-4">
-                        <label for="amount" class="block text-gray-700 mb-2">Amount (₦)</label>
-                        <input type="number" id="amount" name="amount" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
-                    </div>
-                    <div class="mb-4">
-                        <label for="bank" class="block text-gray-700 mb-2">Bank</label>
-                        <select id="bank" name="bank" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
-                            <option value="">Select your bank</option>
-                            <option value="access">Access Bank</option>
-                            <option value="gtb">Guaranty Trust Bank</option>
-                            <option value="zenith">Zenith Bank</option>
-                            <!-- Add more banks as needed -->
-                        </select>
-                    </div>
-                    <div class="mb-4">
-                        <label for="accountNumber" class="block text-gray-700 mb-2">Account Number</label>
-                        <input type="text" id="accountNumber" name="accountNumber" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
-                    </div>
-                    <button type="submit" class="w-full bg-primary text-white py-2 rounded-full hover:bg-orange-700 transition duration-300">
-                        Request Withdrawal
+                    function fetchBalance() {
+                        fetch("fetch_balance.php") // Create a new file to get balance
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === "success") {
+                                document.getElementById("currentBalance").innerText = data.balance;
+                                document.getElementById("currencySymbol").innerText = data.currency;
+                            }
+                        })
+                        .catch(error => console.error("Error fetching balance:", error));
+                    }
+                </script>
+
+                <p class="text-gray-600 mb-4">Last updated: <span id="lastUpdated">--</span></p>
+                    <button class="bg-gray-200 text-gray-700 px-4 py-2 rounded-full hover:bg-gray-300 transition duration-300" onclick="updateBalance()">
+                        <i class="fas fa-sync-alt mr-2"></i>Refresh Balance
                     </button>
-                </form>
-            </div>
-        </div>
 
-        <!-- Recent Withdrawals -->
-        <div class="mt-12">
-            <h2 class="text-2xl font-semibold mb-4">Recent Withdrawals</h2>
-            <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
-                <table class="w-full">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap">2023-07-10</td>
-                            <td class="px-6 py-4 whitespace-nowrap">₦50,000.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                    Completed
-                                </span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap">2023-07-05</td>
-                            <td class="px-6 py-4 whitespace-nowrap">₦75,000.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                    Completed
-                                </span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap">2023-07-01</td>
-                            <td class="px-6 py-4 whitespace-nowrap">₦100,000.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                    Completed
-                                </span>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+
+
+                <script>
+                    function updateBalance() {
+                        fetch('fetch_balance.php')
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.status === "success") {
+                                    document.getElementById("balanceAmount").textContent = `${data.currency} ${data.balance}`;
+                                    document.getElementById("fullName").textContent = data.full_name;
+                                    document.getElementById("lastUpdated").textContent = new Date().toLocaleString();
+                                } else {
+                                    alert("Error: " + data.message);
+                                }
+                            })
+                            .catch(error => console.error('Error fetching balance:', error));
+                    }
+                </script>
+
             </div>
+
+
+
+<div class="bg-white p-6 rounded-2xl shadow-lg">
+    <h2 class="text-2xl font-semibold mb-4">Request Withdrawal</h2>
+    <form id="withdrawalForm">
+        <div class="mb-4">
+            <label for="amount" class="block text-gray-700 mb-2" >Amount</label>
+            <input type="number" id="amount" name="amount" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+        </div>
+        <div class="mb-4">
+            <label for="bank" class="block text-gray-700 mb-2">Bank</label>
+            <select id="bank" name="bank" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                <option value="">Select your bank</option>
+                <option value="access">Access Bank</option>
+                <option value="gtb">Guaranty Trust Bank</option>
+                <option value="zenith">Zenith Bank</option>
+            </select>
+        </div>
+        <div class="mb-4">
+            <label for="accountNumber" class="block text-gray-700 mb-2">Account Number</label>
+            <input type="text" id="accountNumber" name="accountNumber" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+        </div>
+        <button type="submit" class="w-full bg-primary text-white py-2 rounded-full hover:bg-orange-700 transition duration-300">
+            Request Withdrawal
+        </button>
+    </form>
+</div>
+
+<!-- Recent Withdrawals -->
+<div class="mt-12 w-full">
+    <h2 class="text-2xl font-semibold mb-4">Recent Withdrawals</h2>
+    <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+        <table class="w-full">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                <?php if (!empty($withdrawals)): ?>
+                    <?php foreach ($withdrawals as $withdrawal): ?>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap"><?= date("Y-m-d", strtotime($withdrawal['created_at'])) ?></td>
+                            <td class="px-6 py-4 whitespace-nowrap">₦<?= number_format($withdrawal['amount'], 2) ?></td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                                    <?= $withdrawal['status'] == 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' ?>">
+                                    <?= ucfirst($withdrawal['status']) ?>
+                                </span>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <tr>
+                        <td colspan="3" class="px-6 py-4 text-center text-gray-500">No recent withdrawals</td>
+                    </tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+document.getElementById("withdrawalForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    let formData = new FormData(this);
+
+    fetch("withdraw.php", {
+        method: "POST",
+        body: formData,
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert(data.message);
+        if (data.status === "success") {
+            location.reload();
+        }
+    })
+    .catch(error => console.error("Error:", error));
+});
+</script>
+
         </div>
     </main>
 
@@ -252,10 +326,7 @@
 
         // Update balance functionality (mock)
         function updateBalance() {
-            const newBalance = Math.floor(Math.random() * 200000) + 100000;
-            document.querySelector('.text-4xl.font-bold').textContent = `₦${newBalance.toFixed(2)}`;
-            const now = new Date();
-            document.getElementById('lastUpdated').textContent = now.toLocaleString();
+            
         }
 
         // Form submission (mock)

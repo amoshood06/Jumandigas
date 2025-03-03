@@ -30,12 +30,12 @@
     <div class="grid min-h-screen md:grid-cols-2">
         <!-- Left Column -->
         <div class="relative hidden bg-[#FAAF15] p-8 text-white md:block">
-            <div class="space-y-20">
+            <div class="space-y-1">
                 <p class="text-sm text-zinc-400"><img src="./asset/image/logo.png" class="w-24" alt=""></p>
                 
                 <div class="relative h-80">
                     <img 
-                        src="./asset/image/ads.png"
+                        src="./asset/image/Layer.png"
                         alt="Credit card preview"
                         class="object-contain w-full h-full"
                     />

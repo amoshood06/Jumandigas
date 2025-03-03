@@ -1,3 +1,7 @@
+<?php
+session_start();
+$userRole = $_SESSION['role'] ?? null; // Get user role if logged in
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -46,11 +50,26 @@
 
                 <!-- Desktop Navigation -->
                 <nav class="hidden md:flex items-center space-x-8">
-                    <a href="#" class="text-black hover:text-primary">Home</a>
-                    <a href="#" class="text-black hover:text-primary">Order Gas</a>
-                    <a href="#" class="text-black hover:text-primary font-semibold">Buy Cylinder</a>
-                    <a href="#" class="text-black hover:text-primary">Register</a>
-                    <a href="#" class="bg-primary text-white px-8 py-2 rounded-full hover:bg-orange-700">Login</a>
+                <a href="index.php" class="text-black hover:text-primary">Home</a>
+                    <a href="./user/order-page.php" class="text-black hover:text-primary">Order Gas</a>
+                    <a href="buy-cylinder.php" class="text-black hover:text-primary">Buy Cylinder</a>
+                        <?php if (!$userRole): ?>
+                            <a href="register.php" class="text-black hover:text-primary">Register</a>
+                            <a href="login.php" class="bg-primary text-white px-8 py-2 rounded-full hover:bg-orange-700">Login</a>
+                        <?php else: ?>
+                        <!-- Show Dashboard when user is logged in -->
+                        <?php 
+                            $dashboardUrl = '#';
+                            if ($userRole == 'vendor') {
+                                $dashboardUrl = './vendor/index.php';
+                            } elseif ($userRole == 'user') {
+                                $dashboardUrl = './user/index.php';
+                            } elseif ($userRole == 'rider') {
+                                $dashboardUrl = './rider/index.php';
+                            }
+                        ?>
+                        <a href="<?= $dashboardUrl ?>" class="bg-primary text-white px-8 py-2 rounded-full hover:bg-orange-700">Dashboard</a>
+                    <?php endif; ?>
                 </nav>
 
                 <!-- Mobile menu button -->
@@ -68,11 +87,26 @@
                 <i class="fas fa-times text-2xl"></i>
             </button>
             <div class="flex flex-col space-y-4">
-                <a href="#" class="text-black hover:text-primary">Home</a>
-                <a href="#" class="text-black hover:text-primary">Order Gas</a>
-                <a href="#" class="text-black hover:text-primary font-semibold">Buy Cylinder</a>
-                <a href="#" class="text-black hover:text-primary">Register</a>
-                <a href="#" class="bg-primary text-white px-6 py-2 rounded-full text-center hover:bg-orange-700">Login</a>
+            <a href="index.php" class="text-black hover:text-primary">Home</a>
+                    <a href="./user/order-page.php" class="text-black hover:text-primary">Order Gas</a>
+                    <a href="#" class="text-black hover:text-primary">Buy Cylinder</a>
+                    <?php if (!$userRole): ?>
+                    <a href="register.php" class="text-black hover:text-primary">Register</a>
+                    <a href="login.php" class="bg-primary text-white px-6 py-2 rounded-full text-center hover:bg-orange-700">Login</a>
+                    <?php else: ?>
+                    <!-- Show Dashboard when user is logged in -->
+                    <?php 
+                        $dashboardUrl = '#';
+                        if ($userRole == 'vendor') {
+                            $dashboardUrl = './vendor/index.php';
+                        } elseif ($userRole == 'user') {
+                            $dashboardUrl = './user/index.php';
+                        } elseif ($userRole == 'rider') {
+                            $dashboardUrl = './rider/index.php';
+                        }
+                    ?>
+                    <a href="<?= $dashboardUrl ?>" class="bg-primary text-white px-6 py-2 rounded-full text-center hover:bg-orange-700">Dashboard</a>
+                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -94,7 +128,7 @@
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             <!-- Cylinder Card 1 -->
             <div class="cylinder-card bg-white p-6 rounded-2xl shadow-lg">
-                <img src="/placeholder.svg?height=200&width=200" alt="3kg Gas Cylinder" class="w-full h-48 object-contain mb-4">
+                <img src="./asset/image/3kg-removebg-preview.png?height=200&width=200" alt="3kg Gas Cylinder" class="w-full h-48 object-contain mb-4">
                 <h3 class="text-xl font-semibold mb-2">3kg Gas Cylinder</h3>
                 <ul class="text-gray-600 mb-4">
                     <li><i class="fas fa-check text-primary mr-2"></i> Ideal for small households</li>
@@ -108,7 +142,7 @@
 
             <!-- Cylinder Card 2 -->
             <div class="cylinder-card bg-white p-6 rounded-2xl shadow-lg">
-                <img src="/placeholder.svg?height=200&width=200" alt="6kg Gas Cylinder" class="w-full h-48 object-contain mb-4">
+                <img src="./asset/image/6kg-removebg-preview.png?height=200&width=200" alt="6kg Gas Cylinder" class="w-full h-48 object-contain mb-4">
                 <h3 class="text-xl font-semibold mb-2">6kg Gas Cylinder</h3>
                 <ul class="text-gray-600 mb-4">
                     <li><i class="fas fa-check text-primary mr-2"></i> Suitable for medium-sized families</li>
@@ -122,26 +156,12 @@
 
             <!-- Cylinder Card 3 -->
             <div class="cylinder-card bg-white p-6 rounded-2xl shadow-lg">
-                <img src="/placeholder.svg?height=200&width=200" alt="12.5kg Gas Cylinder" class="w-full h-48 object-contain mb-4">
+                <img src="./asset/image/12.5kg-removebg-preview.png?height=200&width=200" alt="12.5kg Gas Cylinder" class="w-full h-48 object-contain mb-4">
                 <h3 class="text-xl font-semibold mb-2">12.5kg Gas Cylinder</h3>
                 <ul class="text-gray-600 mb-4">
                     <li><i class="fas fa-check text-primary mr-2"></i> Perfect for large families</li>
                     <li><i class="fas fa-check text-primary mr-2"></i> Ideal for frequent cooking</li>
                     <li><i class="fas fa-check text-primary mr-2"></i> Long-lasting supply</li>
-                </ul>
-                <a href="#" class="block text-center bg-primary text-white py-2 rounded-full hover:bg-orange-700 transition duration-300">
-                    Inquire Now
-                </a>
-            </div>
-
-            <!-- Cylinder Card 4 -->
-            <div class="cylinder-card bg-white p-6 rounded-2xl shadow-lg">
-                <img src="/placeholder.svg?height=200&width=200" alt="25kg Gas Cylinder" class="w-full h-48 object-contain mb-4">
-                <h3 class="text-xl font-semibold mb-2">25kg Gas Cylinder</h3>
-                <ul class="text-gray-600 mb-4">
-                    <li><i class="fas fa-check text-primary mr-2"></i> Suitable for commercial use</li>
-                    <li><i class="fas fa-check text-primary mr-2"></i> High capacity for restaurants</li>
-                    <li><i class="fas fa-check text-primary mr-2"></i> Cost-effective for high usage</li>
                 </ul>
                 <a href="#" class="block text-center bg-primary text-white py-2 rounded-full hover:bg-orange-700 transition duration-300">
                     Inquire Now

@@ -96,24 +96,23 @@
             <div class="space-y-15">
                 <p class="text-sm text-zinc-400"><img src="./asset/image/logo.png" class="w-24" alt=""></p>
                 
-                <div class="relative h-80">
+                <div class="relative h-[60%]">
                     <img 
-                        src="./asset/image/ads.png"
+                        src="./asset/image/Layer.png"
                         alt="Credit card preview"
                         class="object-contain w-full h-full"
                     />
                 </div>
 
-                <div class="space-y-5">
-                    <h1 class="text-5xl font-semibold tracking-tight">
+                <div class="space-y-1">
+                    <h1 class="text-3xl font-semibold tracking-tight">
                     Join JumandiGas –<br />Fast & Reliable Gas Delivery!
                     </h1>
-                    <p class="text-black font-semibold leading-[60px]">
+                    <p class="text-black font-semibold leading-[30px]">
                     Sign up now to enjoy seamless gas ordering and doorstep delivery. With JumandiGas, you get fast service, secure payments, and 24/7 support.
-                        <br/>
-                    🔹 Easy registration <br/>
-                    🔹 Quick gas refills  <br/>
-                    🔹 Safe & reliable delivery <br/>
+                    🔹 Easy registration
+                    🔹 Quick gas refills 
+                    🔹 Safe & reliable delivery 
 
                     ✅ Create your account now and order with ease! 🚀
                     </p>

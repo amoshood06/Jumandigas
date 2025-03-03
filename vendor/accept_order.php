@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['order_id'])) {
     $riders = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     if ($stmt->rowCount() == 0) {
-        echo "<script>alert('No available riders in your area.'); window.location.href='vendor_dashboard.php';</script>";
+        echo "<script>alert('No available riders in your area.'); window.location.href='index.php';</script>";
         exit();
     }
 }
@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['order_id'])) {
     <title>Assign Rider</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 p-6">
+<body class="bg-gray-100 p-6 h-screen w-full flex justify-center items-center">
     <div class="max-w-lg mx-auto bg-white p-4 rounded-lg shadow">
         <h2 class="text-xl font-bold mb-4">Assign Rider</h2>
         <form action="assign_rider.php" method="POST">

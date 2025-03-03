@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $exchange = $_POST['exchange'];
     $amount_kg = $_POST['amount_kg'];
     $vendor_id = $_POST['vendor_id'];
-    $total_price = $amount_kg * $price_per_kg;
+    $total_price = $amount_kg * $price_per_kg + $bike_price;
     $currency = $user['currency'];
 
     // Check if user has enough balance
@@ -54,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
         $stmt->execute([$user_id, $vendor_id, $cylinder_type, $exchange, $amount_kg, $total_price, $currency, $tracking_id]);
 
-        echo "<script>alert('Order placed! Tracking ID: $tracking_id'); window.location='user-order-history.php';</script>";
+        echo "<script>alert('Order placed! Tracking ID: $tracking_id'); window.location='order-history.php';</script>";
     } else {
         echo "<script>alert('Insufficient balance!');</script>";
     }
@@ -224,10 +224,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <div>
                             <h3 class="font-semibold">Select Vendor:</h3>
                         </div>
-                        <select name="vendor_id" required class="w-full p-2 border rounded mb-2">
-                            <?php foreach ($vendors as $vendor) { ?>
-                                <option value="<?= $vendor['id'] ?>"><?= $vendor['full_name'] ?> (<?= $vendor['city'] ?>, <?= $vendor['state'] ?>)</option>
-                            <?php } ?>
+                        <select id="vendorSelect" name="vendor_id" required>
+                            <option>Loading vendors...</option>
                         </select>
                         
                     </div>
@@ -239,6 +237,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <div class="flex justify-between items-center mb-4">
                         <span>Price per Kg:</span>
                         <span id="price"><?= $price_per_kg ?></span> <?= $user['currency'] ?>
+                    </div>
+                    <div class="flex justify-between items-center mb-4">
+                        <span>Bike Price:</span>
+                        <span id="bike_price"><?= $bike_price ?></span> <?= $user['currency'] ?>
                     </div>
                     <div class="flex justify-between items-center mb-4">
                         <span>Total Cost:</span>
@@ -261,8 +263,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // }
         function calculateTotal() {
     let amount = document.getElementById("amount_kg").value;
-    let price = parseFloat(document.getElementById("price").innerText) || 0; // Ensure price is a number
-    document.getElementById("total_price").innerText = (amount * price).toFixed(2);
+    let price = parseFloat(document.getElementById("price").innerText) || 0;
+    let bike_price = parseFloat(document.getElementById("bike_price").innerText) || 0; // Ensure price is a number
+    document.getElementById("total_price").innerText = (amount * price + bike_price).toFixed(2);
 }
 
     </script>
@@ -302,5 +305,62 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
         });
     </script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    function loadVendors() {
+        $.ajax({
+            url: "fetch_vendors.php",
+            type: "GET",
+            dataType: "json",
+            success: function(response) {
+                if (response.status === "success") {
+                    let vendorSelect = $("#vendorSelect");
+                    vendorSelect.empty(); // Clear previous options
+                    response.vendors.forEach(function(vendor) {
+                        vendorSelect.append(`<option value="${vendor.id}">${vendor.full_name}</option>`);
+                    });
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function() {
+                alert("Error fetching vendors. Please try again.");
+            }
+        });
+    }
+
+    $(document).ready(function() {
+        loadVendors(); // Load vendors when the page loads
+    });
+</script>
+<script>
+    function loadVendors() {
+        $.ajax({
+            url: "fetch_vendors.php",
+            type: "GET",
+            dataType: "json",
+            success: function(response) {
+                if (response.status === "success") {
+                    let vendorSelect = $("#vendorSelect");
+                    vendorSelect.empty();
+                    response.vendors.forEach(function(vendor) {
+                        let stars = "⭐".repeat(Math.round(vendor.avg_rating));
+                        vendorSelect.append(`<option value="${vendor.id}">${vendor.full_name} (${stars})</option>`);
+                    });
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function() {
+                alert("Error fetching vendors. Please try again.");
+            }
+        });
+    }
+
+    $(document).ready(function() {
+        loadVendors();
+    });
+</script>
+
 </body>
 </html>
