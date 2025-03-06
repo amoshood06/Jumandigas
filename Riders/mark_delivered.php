@@ -7,6 +7,7 @@ if ($_SESSION['role'] != 'rider') {
     exit();
 }
 
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['order_id'])) {
     $order_id = $_POST['order_id'];
     $rider_id = $_SESSION['user_id'];

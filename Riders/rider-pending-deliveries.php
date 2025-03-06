@@ -1,5 +1,13 @@
 <?php
-require '../db/db.php'; // Database connection
+session_start();
+
+if ($_SESSION['role'] != 'rider') {
+    header("Location: ../login.php");
+    exit();
+}
+$_SESSION['user_id'];
+
+require '../db/db.php'; // Include database connection
 
 try {
     // Fetch today's deliveries
@@ -116,11 +124,11 @@ try {
                         </div> -->
                         
                         <nav class="space-y-2 px-4">
-                            <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Dashboard</a>
-                            <a href="#" class="block p-3 bg-[#ff6b00] text-white rounded-lg">Pending Deliveries</a>
-                            <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Delivery History</a>
-                            <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">My Performance</a>
-                            <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Settings</a>
+                            <a href="index.php" class="block p-3 bg-[#ff6b00] text-white rounded-lg">Dashboard</a>
+                            <a href="rider-pending-deliveries.php" class="block p-3 hover:bg-orange-100 rounded-lg">Pending Deliveries</a>
+                            <a href="rider-delivery-history.php" class="block p-3 hover:bg-orange-100 rounded-lg">Delivery History</a>
+                            <a href="rider-performance.php" class="block p-3 hover:bg-orange-100 rounded-lg">My Performance</a>
+                            <a href="rider-settings.php" class="block p-3 hover:bg-orange-100 rounded-lg">Settings</a>
                         </nav>
                     </div>
                 </div>
@@ -151,7 +159,7 @@ try {
 
                 <!-- Delivery List -->
                 <!-- Delivery List -->
-            <div class="flex-1 w-full">
+                <div class="flex-1 w-full">
                 <h1 class="text-2xl font-bold mb-6">Pending Deliveries</h1>
                 <div class="bg-white shadow rounded-lg overflow-hidden">
                     <table class="min-w-full divide-y divide-gray-200">
@@ -178,12 +186,17 @@ try {
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 text-sm font-medium">
-                                    <?php if ($order['status'] == 'Pending'): ?>
-                                        <button onclick="startDelivery('<?= $order['id'] ?>', '<?= $order['track_id'] ?>')" class="text-[#ff6b00] hover:text-[#e05e00]">Start</button>
-                                    <?php elseif ($order['status'] == 'En Route'): ?>
-                                        <button onclick="cancelRider('<?= $order['rider_id'] ?>', '<?= $order['id'] ?>')" class="text-red-500 hover:text-red-700">Cancel</button>
-                                    <?php endif; ?>
-                                </td>
+    <?php 
+        echo "Order ID: " . $order['id'] . " - Tracking ID: " . $order['tracking_id']; // Debugging
+    ?>
+
+    <?php if ($order['status'] == 'processing'): ?>
+        <button onclick="startDelivery('<?= $order['id'] ?>', '<?= $order['tracking_id'] ?>')" class="text-black hover:text-[#e05e00]">Start</button>
+    <?php elseif ($order['status'] == 'En Route'): ?>
+        <button onclick="cancelRider('<?= $order['rider_id'] ?>', '<?= $order['id'] ?>')" class="text-red-500 hover:text-red-700">Cancel</button>
+    <?php endif; ?>
+</td>
+
                             </tr>
                             <?php endforeach; ?>
                         </tbody>

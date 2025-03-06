@@ -10,72 +10,91 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
-// Fetch user's full name
-$stmt = $pdo->prepare("SELECT full_name FROM users WHERE id = ?");
+// Create payment_history table if not exists
+$pdo->exec("CREATE TABLE IF NOT EXISTS payment_history (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT UNSIGNED NOT NULL,
+    amount DECIMAL(10,2) NOT NULL,
+    currency VARCHAR(10) NOT NULL,
+    tx_ref VARCHAR(50) NOT NULL,
+    status ENUM('successful', 'failed') NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE
+)");
+
+// Get user ID from session (ensure user is logged in)
+$user_id = $_SESSION['user_id'] ?? null;
+if (!$user_id) {
+    die("User not logged in");
+}
+
+// Fetch user details
+$stmt = $pdo->prepare("SELECT full_name, email, country FROM users WHERE id = ?");
 $stmt->execute([$user_id]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// Check if user data exists
-$full_name = $user ? htmlspecialchars($user['full_name']) : "Unknown User";
-?>
+if (!$user) {
+    die("User not found");
+}
 
+// Set currency based on country
+$currency = ($user['country'] == 'Nigeria') ? 'NGN' : (($user['country'] == 'Ghana') ? 'GHS' : 'USD');
 
-<?php
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $amount = isset($_POST['depositAmount']) ? floatval($_POST['depositAmount']) : 0;
-    $payment_method = isset($_POST['paymentMethod']) ? trim($_POST['paymentMethod']) : '';
+// Flutterwave credentials
+$public_key = "FLWPUBK-35614b38c377f9f0c86ce78c4ee9c6e0-X";
+$secret_key = "FLWSECK-f361939897b2bd2eed221ca7a38542f3-1956596e20cvt-X";
+$encryption_key = "f361939897b2b928ce0c84b1";
 
-    // Validate input
-    if ($amount < 100) {
-        echo json_encode(["status" => "error", "message" => "Minimum deposit amount is ₦100"]);
+// Process payment
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $amount = $_POST['amount'];
+    
+    // Generate transaction reference
+    $tx_ref = "TX_" . time();
+    
+    $payment_data = [
+        "tx_ref" => $tx_ref,
+        "amount" => $amount,
+        "currency" => $currency,
+        "redirect_url" => "http://localhost/jumandi/user/callback.php",
+        "customer" => [
+            "email" => $user['email'],
+            "name" => $user['full_name']
+        ],
+        "customizations" => [
+            "title" => "JumandiGas Payment",
+            "description" => "Wallet Funding"
+        ]
+    ];
+    
+    // API call to Flutterwave
+    $ch = curl_init("https://api.flutterwave.com/v3/payments");
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        "Authorization: Bearer $secret_key",
+        "Content-Type: application/json"
+    ]);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payment_data));
+    
+    $response = curl_exec($ch);
+    curl_close($ch);
+    
+    $response_data = json_decode($response, true);
+    
+    // Insert payment history into database
+    $status = $response_data['status'] == 'success' ? 'successful' : 'failed';
+    $stmt = $pdo->prepare("INSERT INTO payment_history (user_id, amount, currency, tx_ref, status) VALUES (?, ?, ?, ?, ?)");
+    $stmt->execute([$user_id, $amount, $currency, $tx_ref, $status]);
+    
+    if ($status == 'successful') {
+        header("Location: " . $response_data['data']['link']);
         exit;
-    }
-
-    if (empty($payment_method)) {
-        echo json_encode(["status" => "error", "message" => "Payment method is required"]);
-        exit;
-    }
-
-    try {
-        // Begin transaction
-        $pdo->beginTransaction();
-
-        // Insert deposit record
-        $stmt = $pdo->prepare("INSERT INTO deposits (user_id, amount, payment_method, status) VALUES (?, ?, ?, 'successful')");
-        $stmt->execute([$user_id, $amount, $payment_method]);
-
-        // Update user balance
-        $updateBalance = $pdo->prepare("UPDATE users SET balance = balance + ? WHERE id = ?");
-        $updateBalance->execute([$amount, $user_id]);
-
-        // Fetch updated balance, currency, and username
-        $balanceQuery = $pdo->prepare("SELECT full_name, balance, currency FROM users WHERE id = ?");
-        $balanceQuery->execute([$user_id]);
-        $user = $balanceQuery->fetch(PDO::FETCH_ASSOC);
-
-        if (!$user) {
-            throw new Exception("User not found");
-        }
-
-        // Commit transaction
-        $pdo->commit();
-
-        // Return response including the username
-        echo json_encode([
-            "status" => "success",
-            "message" => "Deposit successful",
-            "username" => htmlspecialchars($user['full_name']), // Include username
-            "balance" => number_format($user['balance'], 2),
-            "currency" => htmlspecialchars($user['currency']) // Prevent XSS
-        ]);
-    } catch (Exception $e) {
-        $pdo->rollBack();
-        echo json_encode(["status" => "error", "message" => "Error: " . $e->getMessage()]);
+    } else {
+        echo "Payment failed. Please try again.";
     }
 }
 ?>
-
-
 
 
 <!DOCTYPE html>
@@ -110,7 +129,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         <div class="text-white">
             <p class="text-sm">User Account</p>
-            <p class="text-2xl font-bold"><?= $full_name ?></p>
+            <p class="text-2xl font-bold"><?= htmlspecialchars($user['full_name']) ?></p>
         </div>
         <a href="logout.php">
             <button class="bg-gray-200 px-6 py-2 rounded-full font-bold">Logout</button>
@@ -196,20 +215,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <!-- Deposit Form -->
                 <div class="bg-white shadow rounded-lg p-6 mb-6">
                     <h2 class="text-xl font-semibold mb-4">Make a Deposit</h2>
-                    <form id="depositForm">
+                    <form method="POST">
                         <div class="mb-4">
                             <label for="depositAmount" class="block text-sm font-medium text-gray-700 mb-1">Deposit Amount (₦)</label>
-                            <input type="number" id="depositAmount" name="depositAmount" min="100" step="100" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#ff6b00] focus:border-[#ff6b00]" required>
+                            <input type="number" id="depositAmount" name="amount" min="100" step="100" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#ff6b00] focus:border-[#ff6b00]" required>
                         </div>
-                        <div class="mb-4">
-                            <label for="paymentMethod" class="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
-                            <select id="paymentMethod" name="paymentMethod" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#ff6b00] focus:border-[#ff6b00]" required>
-                                <option value="">Select a payment method</option>
-                                <option value="card">Credit/Debit Card</option>
-                                <option value="bank">Bank Transfer</option>
-                                <option value="ussd">USSD</option>
-                            </select>
-                        </div>
+                        
                         <button type="submit" class="w-full px-4 py-2 bg-[#ff6b00] text-white rounded-md hover:bg-[#e05e00] focus:outline-none focus:ring-2 focus:ring-[#ff6b00] focus:ring-opacity-50">
                             Proceed to Payment
                         </button>
@@ -229,8 +240,67 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white divide-y divide-gray-200" id="transactionTableBody">
-                                <!-- Transaction rows will be dynamically added here -->
+                            <tbody class="bg-white divide-y divide-gray-200">
+    <?php
+    require '../db/db.php'; // Include database connection
+
+    $user_id = $_SESSION['user_id']; // Ensure user is logged in
+
+    $limit = 5; // Number of transactions per page
+    $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+    $offset = ($page - 1) * $limit;
+
+    // Count total transactions
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM payment_history WHERE user_id = ?");
+    $stmt->execute([$user_id]);
+    $total_transactions = $stmt->fetchColumn();
+    $total_pages = ceil($total_transactions / $limit);
+
+    // Fetch paginated transactions
+    $stmt = $pdo->prepare("SELECT * FROM payment_history WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?");
+    $stmt->bindValue(1, $user_id, PDO::PARAM_INT);
+    $stmt->bindValue(2, $limit, PDO::PARAM_INT);
+    $stmt->bindValue(3, $offset, PDO::PARAM_INT);
+    $stmt->execute();
+    $transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    if ($transactions) {
+        foreach ($transactions as $transaction) {
+            echo "<tr>
+                    <td class='px-6 py-4 whitespace-nowrap'>" . htmlspecialchars($transaction['created_at']) . "</td>
+                    <td class='px-6 py-4 whitespace-nowrap'>Deposit</td>
+                    <td class='px-6 py-4 whitespace-nowrap'>₦" . htmlspecialchars(number_format($transaction['amount'], 2)) . "</td>
+                    <td class='px-6 py-4 whitespace-nowrap'>
+                        <span class='px-2 inline-flex text-xs leading-5 font-semibold rounded-full " . 
+                        ($transaction['status'] == 'successful' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800') . "'>
+                        " . htmlspecialchars($transaction['status']) . "
+                        </span>
+                    </td>
+                </tr>";
+        }
+    } else {
+        echo "<tr><td colspan='4' class='px-6 py-4 text-center text-gray-500'>No transactions found</td></tr>";
+    }
+    ?>
+</tbody>
+
+<!-- Pagination Controls -->
+<div class="mt-4 flex justify-between">
+    <?php if ($page > 1): ?>
+        <a href="?page=<?php echo $page - 1; ?>" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md">Previous</a>
+    <?php else: ?>
+        <span class="px-4 py-2 bg-gray-300 text-gray-500 rounded-md cursor-not-allowed">Previous</span>
+    <?php endif; ?>
+
+    <?php if ($page < $total_pages): ?>
+        <a href="?page=<?php echo $page + 1; ?>" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md">Next</a>
+    <?php else: ?>
+        <span class="px-4 py-2 bg-gray-300 text-gray-500 rounded-md cursor-not-allowed">Next</span>
+    <?php endif; ?>
+</div>
+
+
+
                             </tbody>
                         </table>
                     </div>
@@ -307,21 +377,6 @@ function updateBalance(amount) {
     balanceElement.textContent = currentBalance.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
-// Add transaction to the table
-function addTransaction(amount, type) {
-    const tableBody = document.getElementById('transactionTableBody');
-    const newRow = tableBody.insertRow(0);
-    newRow.innerHTML = `
-        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${new Date().toLocaleDateString()}</td>
-        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${type}</td>
-        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">₦${parseFloat(amount).toFixed(2)}</td>
-        <td class="px-6 py-4 whitespace-nowrap">
-            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                Successful
-            </span>
-        </td>
-    `;
-}
 </script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>

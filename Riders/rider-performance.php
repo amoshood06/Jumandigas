@@ -53,18 +53,18 @@
                     </div>
 
                     <div class="flex-grow overflow-y-auto">
-                        <div class="flex flex-col items-center my-8">
+                        <!-- <div class="flex flex-col items-center my-8">
                             <img src="/placeholder.svg?height=100&width=100" alt="Rider Profile" class="rounded-full w-24 h-24 mb-4">
                             <h2 class="text-xl font-semibold">John Doe</h2>
                             <p class="text-sm text-gray-500">Rider ID: R12345</p>
-                        </div>
+                        </div> -->
                         
                         <nav class="space-y-2 px-4">
-                            <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Dashboard</a>
-                            <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Pending Deliveries</a>
-                            <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Delivery History</a>
-                            <a href="#" class="block p-3 bg-[#ff6b00] text-white rounded-lg">My Performance</a>
-                            <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Settings</a>
+                            <a href="index.php" class="block p-3 bg-[#ff6b00] text-white rounded-lg">Dashboard</a>
+                            <a href="rider-pending-deliveries.php" class="block p-3 hover:bg-orange-100 rounded-lg">Pending Deliveries</a>
+                            <a href="rider-delivery-history.php" class="block p-3 hover:bg-orange-100 rounded-lg">Delivery History</a>
+                            <a href="rider-performance.php" class="block p-3 hover:bg-orange-100 rounded-lg">My Performance</a>
+                            <a href="rider-settings.php" class="block p-3 hover:bg-orange-100 rounded-lg">Settings</a>
                         </nav>
                     </div>
                 </div>

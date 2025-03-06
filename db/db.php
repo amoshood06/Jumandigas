@@ -1,14 +1,14 @@
 <?php
 // Database credentials
-$host = "sdb-81.hosting.stackcp.net"; // Change to your database host
-$dbname = "jumandigas-353038374f79"; // Change to your database name
-$username = "jumandigas"; // Change to your database username
-$password = "ks2bs8a8ak"; // Change to your database password
+// $host = "sdb-81.hosting.stackcp.net"; // Change to your database host
+// $dbname = "jumandigas-353038374f79"; // Change to your database name
+// $username = "jumandigas"; // Change to your database username
+// $password = "ks2bs8a8ak"; // Change to your database password
 
-// $host = "localhost"; // Change to your database host
-// $dbname = "jumandigas"; // Change to your database name
-// $username = "root"; // Change to your database username
-// $password = ""; // Change to your database password
+$host = "localhost"; // Change to your database host
+$dbname = "jumandigas"; // Change to your database name
+$username = "root"; // Change to your database username
+$password = ""; // Change to your database password
 
 try {
     // Create a new PDO connection

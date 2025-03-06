@@ -40,7 +40,15 @@
             background-color: #FF6B00;
         }
     </style>
-    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap" async defer></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY"></script>
+    <style>
+        #map {
+            height: 400px;
+            width: 100%;
+            margin-top: 20px;
+        }
+    </style>
+
 </head>
 <body class="bg-orange-50 pt-16">
     <!-- Fixed Header -->
@@ -100,78 +108,72 @@
             <form id="trackingForm" class="bg-white p-6 rounded-2xl shadow-lg">
                 <div class="mb-4">
                     <label for="orderNumber" class="block text-gray-700 mb-2">Order Number</label>
-                    <input type="text" id="orderNumber" name="orderNumber" placeholder="Enter your order number" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                    <input type="text"id="track_id" name="orderNumber" placeholder="Enter your order number" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
                 </div>
-                <button type="submit" class="w-full bg-primary text-white py-2 rounded-full hover:bg-orange-700 transition duration-300">
+                <button onclick="startTracking()"  class="w-full bg-primary text-white py-2 rounded-full hover:bg-orange-700 transition duration-300">
                     Track Order
                 </button>
             </form>
+            <div id="result"></div>
+    <div id="map"></div>
+
+    <script>
+        let map, marker, intervalId;
+
+        function initMap() {
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: { lat: 0, lng: 0 },
+                zoom: 15
+            });
+            marker = new google.maps.Marker({ map });
+        }
+
+        function updateMap(lat, lng) {
+            let location = new google.maps.LatLng(lat, lng);
+            marker.setPosition(location);
+            map.setCenter(location);
+        }
+
+        function fetchTrackingData(trackId) {
+            fetch('track_order.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'track_id=' + encodeURIComponent(trackId)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    document.getElementById('result').innerHTML = `Rider ID: ${data.data.rider_id} <br> 
+                        Latitude: ${data.data.latitude} <br> 
+                        Longitude: ${data.data.longitude}`;
+
+                    updateMap(parseFloat(data.data.latitude), parseFloat(data.data.longitude));
+                } else {
+                    document.getElementById('result').innerHTML = data.message;
+                    clearInterval(intervalId); // Stop tracking if invalid
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        function startTracking() {
+            let trackId = document.getElementById('track_id').value;
+            if (!trackId) {
+                alert("Please enter a tracking ID");
+                return;
+            }
+
+            fetchTrackingData(trackId); // Fetch first location immediately
+            intervalId = setInterval(() => fetchTrackingData(trackId), 5000); // Update every 5s
+        }
+
+        window.onload = initMap;
+    </script>
         </div>
 
-        <!-- Order Details and Tracking (Initially Hidden) -->
-        <div id="orderDetails" class="bg-white p-6 rounded-2xl shadow-lg mb-8 hidden">
-            <h2 class="text-2xl font-semibold mb-4">Order #<span id="displayOrderNumber"></span></h2>
-            <div class="grid md:grid-cols-2 gap-4 mb-6">
-                <div>
-                    <p class="font-semibold">Estimated Delivery:</p>
-                    <p id="estimatedDelivery">July 16, 2023, 2:00 PM - 4:00 PM</p>
-                </div>
-                <div>
-                    <p class="font-semibold">Order Status:</p>
-                    <p id="orderStatus" class="text-green-600">In Transit</p>
-                </div>
-            </div>
-            <div class="mb-6">
-                <p class="font-semibold mb-2">Order Items:</p>
-                <ul id="orderItems" class="list-disc pl-5">
-                    <li>1x 12.5kg Gas Cylinder</li>
-                    <li>1x Gas Regulator</li>
-                </ul>
-            </div>
-            <div class="mb-6">
-                <p class="font-semibold mb-2">Delivery Address:</p>
-                <p id="deliveryAddress">123 Main St, Lekki, Lagos</p>
-            </div>
-            <div id="map" class="w-full h-64 rounded-lg mt-4"></div>
-        </div>
+       
 
-        <!-- Tracking Timeline (Initially Hidden) -->
-        <div id="trackingTimeline" class="bg-white p-6 rounded-2xl shadow-lg hidden">
-            <h3 class="text-xl font-semibold mb-4">Tracking Timeline</h3>
-            <div class="relative">
-                <div class="tracking-line absolute left-2 top-2 bottom-2"></div>
-                <div class="space-y-8">
-                    <div class="flex items-center">
-                        <div class="tracking-dot active z-10"></div>
-                        <div class="ml-4">
-                            <p class="font-semibold">Order Placed</p>
-                            <p class="text-sm text-gray-500">July 15, 2023, 10:30 AM</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center">
-                        <div class="tracking-dot active z-10"></div>
-                        <div class="ml-4">
-                            <p class="font-semibold">Order Confirmed</p>
-                            <p class="text-sm text-gray-500">July 15, 2023, 11:00 AM</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center">
-                        <div class="tracking-dot active z-10"></div>
-                        <div class="ml-4">
-                            <p class="font-semibold">Out for Delivery</p>
-                            <p class="text-sm text-gray-500">July 16, 2023, 9:00 AM</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center">
-                        <div class="tracking-dot z-10"></div>
-                        <div class="ml-4">
-                            <p class="font-semibold text-gray-400">Delivered</p>
-                            <p class="text-sm text-gray-500">Estimated: July 16, 2023, 2:00 PM - 4:00 PM</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        
     </main>
 
     <!-- Footer -->
@@ -255,50 +257,6 @@
                 mobileMenu.classList.remove('active');
             }
         });
-
-        // Order tracking form submission (mock)
-        document.getElementById('trackingForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const orderNumber = document.getElementById('orderNumber').value;
-            
-            // Show order details and tracking timeline
-            document.getElementById('orderDetails').classList.remove('hidden');
-            document.getElementById('trackingTimeline').classList.remove('hidden');
-            
-            // Update order number in the details section
-            document.getElementById('displayOrderNumber').textContent = orderNumber;
-            
-            // Scroll to order details
-            document.getElementById('orderDetails').scrollIntoView({ behavior: 'smooth' });
-
-            updateMap(6.5244, 3.3792); // Replace with actual coordinates from your backend
-        });
-
-    // Google Maps functionality
-    let map;
-    let marker;
-
-    function initMap() {
-        // Default coordinates (you can set this to a default location)
-        const defaultLocation = { lat: 6.5244, lng: 3.3792 }; // Lagos, Nigeria
-
-        map = new google.maps.Map(document.getElementById("map"), {
-            center: defaultLocation,
-            zoom: 13,
-        });
-
-        marker = new google.maps.Marker({
-            position: defaultLocation,
-            map: map,
-            title: "Delivery Location"
-        });
-    }
-
-    function updateMap(lat, lng) {
-        const newPosition = new google.maps.LatLng(lat, lng);
-        map.setCenter(newPosition);
-        marker.setPosition(newPosition);
-    }
     </script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
