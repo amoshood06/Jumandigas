@@ -5,10 +5,16 @@ header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
 header("Content-Type: application/json");
 
-$host = "localhost"; 
-$user = "root"; 
-$password = ""; 
-$database = "jumandigas"; 
+// Database credentials
+$host = "sdb-81.hosting.stackcp.net"; // Change to your database host
+$database = "jumandigas-353038374f79"; // Change to your database name
+$user = "jumandigas"; // Change to your database username
+$password = "ks2bs8a8ak"; // Change to your database password
+
+// $host = "localhost"; 
+// $user = "root"; 
+// $password = ""; 
+// $database = "jumandigas"; 
 
 $conn = new mysqli($host, $user, $password, $database);
 

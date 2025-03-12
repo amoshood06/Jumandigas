@@ -3,10 +3,15 @@ header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST");
 header("Content-Type: application/json");
 
-$host = "localhost"; // Change this
-$user = "root"; // Change this
-$password = ""; // Change this
-$database = "jumandigas"; // Change this
+$host = "sdb-81.hosting.stackcp.net"; // Change to your database host
+$database = "jumandigas-353038374f79"; // Change to your database name
+$user = "jumandigas"; // Change to your database username
+$password = "ks2bs8a8ak"; // Change to your database password
+
+// $host = "localhost"; // Change this
+// $user = "root"; // Change this
+// $password = ""; // Change this
+// $database = "jumandigas"; // Change this
 
 $conn = new mysqli($host, $user, $password, $database);
 
