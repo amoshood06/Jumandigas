@@ -1,31 +1,31 @@
 <?php
 require '../db/db.php';
-session_start();
 
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header("Content-Type: application/json");
 
-// Ensure user is logged in
-if (!isset($_SESSION['user_id'])) {
-    echo json_encode(["status" => "error", "message" => "User not logged in"]);
+// Get token from the Authorization header
+$headers = getallheaders();
+$token = isset($headers['Authorization']) ? trim($headers['Authorization']) : '';
+
+if (!$token) {
+    echo json_encode(["status" => "error", "message" => "Unauthorized access, token required"]);
     exit();
 }
 
-$user_id = $_SESSION['user_id'];
+// Verify the token in the database
+$stmt = $pdo->prepare("SELECT id, country, state, city FROM users WHERE api_token = ?");
+$stmt->execute([$token]);
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$user) {
+    echo json_encode(["status" => "error", "message" => "Invalid token!"]);
+    exit();
+}
 
 try {
-    // Fetch user location
-    $stmt = $pdo->prepare("SELECT country, state, city FROM users WHERE id = ?");
-    $stmt->execute([$user_id]);
-    $user = $stmt->fetch();
-
-    if (!$user) {
-        echo json_encode(["status" => "error", "message" => "User not found"]);
-        exit();
-    }
-
     // Fetch vendors in the same location with their average ratings
     $stmt = $pdo->prepare("
         SELECT users.id, users.full_name, 

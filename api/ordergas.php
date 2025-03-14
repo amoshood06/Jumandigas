@@ -1,47 +1,46 @@
 <?php
-//require_once "../auth_check.php";
 require '../db/db.php'; // Include database connection
-session_start();
 
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header("Content-Type: application/json");
 
-// Ensure user is logged in
-if (!isset($_SESSION['user_id'])) {
-    echo json_encode(["status" => "error", "message" => "Unauthorized access!"]);
+// Retrieve token from the Authorization header
+$headers = getallheaders();
+$token = isset($headers['Authorization']) ? trim($headers['Authorization']) : '';
+
+if (!$token) {
+    echo json_encode(["status" => "error", "message" => "Unauthorized access! Token required."]);
     exit();
 }
 
-$user_id = $_SESSION['user_id'];
+// Verify token and fetch user details
+$stmt = $pdo->prepare("SELECT id, email, balance, currency, country, state, city FROM users WHERE api_token = ?");
+$stmt->execute([$token]);
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$user) {
+    echo json_encode(["status" => "error", "message" => "Invalid token!"]);
+    exit();
+}
 
 try {
-    // Fetch user details
-    $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
-    $stmt->execute([$user_id]);
-    $user = $stmt->fetch();
-
-    if (!$user) {
-        echo json_encode(["status" => "error", "message" => "User not found!"]);
-        exit();
-    }
-
     // Fetch vendors in the same location
-    $stmt = $pdo->prepare("SELECT * FROM users WHERE role = 'vendor' AND country = ? AND state = ? AND city = ?");
+    $stmt = $pdo->prepare("SELECT id, full_name FROM users WHERE role = 'vendor' AND country = ? AND state = ? AND city = ?");
     $stmt->execute([$user['country'], $user['state'], $user['city']]);
-    $vendors = $stmt->fetchAll();
+    $vendors = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Fetch gas price per kg
     $stmt = $pdo->prepare("SELECT price FROM locations WHERE country = ? AND state = ?");
     $stmt->execute([$user['country'], $user['state']]);
-    $location = $stmt->fetch();
+    $location = $stmt->fetch(PDO::FETCH_ASSOC);
     $price_per_kg = $location ? $location['price'] : 0;
 
     // Fetch bike price based on user's location
     $stmt = $pdo->prepare("SELECT price FROM bike WHERE country = ? AND state = ? AND city = ?");
     $stmt->execute([$user['country'], $user['state'], $user['city']]);
-    $bike_location = $stmt->fetch();
+    $bike_location = $stmt->fetch(PDO::FETCH_ASSOC);
     $bike_price = $bike_location ? $bike_location['price'] : 0;
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -53,10 +52,10 @@ try {
             exit();
         }
 
-        $cylinder_type = $data['cylinder_type'];
-        $exchange = $data['exchange'];
-        $amount_kg = $data['amount_kg'];
-        $vendor_id = $data['vendor_id'];
+        $cylinder_type = htmlspecialchars($data['cylinder_type']);
+        $exchange = htmlspecialchars($data['exchange']);
+        $amount_kg = (float) $data['amount_kg'];
+        $vendor_id = (int) $data['vendor_id'];
         $total_price = $amount_kg * $price_per_kg + $bike_price;
         $currency = $user['currency'];
 
@@ -64,7 +63,7 @@ try {
         if ($user['balance'] >= $total_price) {
             // Deduct from user balance
             $stmt = $pdo->prepare("UPDATE users SET balance = balance - ? WHERE id = ?");
-            $stmt->execute([$total_price, $user_id]);
+            $stmt->execute([$total_price, $user['id']]);
 
             // Generate tracking ID
             $tracking_id = "TRK" . strtoupper(uniqid());
@@ -72,7 +71,7 @@ try {
             // Insert order
             $stmt = $pdo->prepare("INSERT INTO orders (user_id, vendor_id, cylinder_type, exchange, amount_kg, total_price, currency, tracking_id) 
                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-            $stmt->execute([$user_id, $vendor_id, $cylinder_type, $exchange, $amount_kg, $total_price, $currency, $tracking_id]);
+            $stmt->execute([$user['id'], $vendor_id, $cylinder_type, $exchange, $amount_kg, $total_price, $currency, $tracking_id]);
 
             echo json_encode(["status" => "success", "message" => "Order placed successfully!", "tracking_id" => $tracking_id]);
         } else {
@@ -82,7 +81,12 @@ try {
         // Return data for GET requests
         echo json_encode([
             "status" => "success",
-            "user" => ["id" => $user['id'], "email" => $user['email'], "balance" => $user['balance']],
+            "user" => [
+                "id" => $user['id'],
+                "email" => $user['email'],
+                "balance" => $user['balance'],
+                "currency" => $user['currency']
+            ],
             "vendors" => $vendors,
             "price_per_kg" => $price_per_kg,
             "bike_price" => $bike_price

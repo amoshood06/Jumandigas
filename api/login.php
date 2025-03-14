@@ -1,5 +1,4 @@
 <?php
-session_start();
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
@@ -11,11 +10,6 @@ $database = "jumandigas-353038374f79"; // Change to your database name
 $user = "jumandigas"; // Change to your database username
 $password = "ks2bs8a8ak"; // Change to your database password
 
-// $host = "localhost"; 
-// $user = "root"; 
-// $password = ""; 
-// $database = "jumandigas"; 
-
 $conn = new mysqli($host, $user, $password, $database);
 
 if ($conn->connect_error) {
@@ -25,7 +19,6 @@ if ($conn->connect_error) {
 
 // Read JSON input
 $data = json_decode(file_get_contents("php://input"), true);
-
 $email = isset($data['email']) ? trim($data['email']) : null;
 $password = isset($data['password']) ? trim($data['password']) : null;
 
@@ -43,19 +36,30 @@ $result = $stmt->get_result();
 $user = $result->fetch_assoc();
 
 if ($user && password_verify($password, $user['password'])) {
-    $_SESSION['user_id'] = $user['id'];
-    $_SESSION['role'] = $user['role'];
-
     if ($user['role'] !== 'user') {
         echo json_encode(["status" => "error", "message" => "Unauthorized role!"]);
         exit();
     }
 
-    echo json_encode(["status" => "success", "message" => "Login successful!", "user" => [
-        "id" => $user['id'],
-        "email" => $user['email'],
-        "role" => $user['role']
-    ]]);
+    // Generate a unique API token
+    $token = bin2hex(random_bytes(32));
+
+    // Save token in database
+    $updateTokenSQL = "UPDATE users SET api_token = ? WHERE id = ?";
+    $stmt = $conn->prepare($updateTokenSQL);
+    $stmt->bind_param("si", $token, $user['id']);
+    $stmt->execute();
+
+    echo json_encode([
+        "status" => "success",
+        "message" => "Login successful!",
+        "user" => [
+            "id" => $user['id'],
+            "email" => $user['email'],
+            "role" => $user['role'],
+            "token" => $token
+        ]
+    ]);
 } else {
     echo json_encode(["status" => "error", "message" => "Invalid email or password!"]);
 }

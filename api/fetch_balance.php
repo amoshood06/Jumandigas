@@ -1,24 +1,25 @@
 <?php
-session_start();
-require '../db/db.php';
-
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header("Content-Type: application/json");
 
-// Ensure user is logged in
-if (!isset($_SESSION['user_id'])) {
-    echo json_encode(["status" => "error", "message" => "User not logged in"]);
+// Database connection
+require '../db/db.php';
+
+// Get token from the Authorization header
+$headers = getallheaders();
+$token = isset($headers['Authorization']) ? trim($headers['Authorization']) : '';
+
+if (!$token) {
+    echo json_encode(["status" => "error", "message" => "Unauthorized access, token required"]);
     exit();
 }
 
-$user_id = $_SESSION['user_id'];
-
 try {
-    // Fetch user's balance and currency
-    $stmt = $pdo->prepare("SELECT balance, currency FROM users WHERE id = ?");
-    $stmt->execute([$user_id]);
+    // Verify the token in the database
+    $stmt = $pdo->prepare("SELECT id, balance, currency FROM users WHERE api_token = ?");
+    $stmt->execute([$token]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($user) {
@@ -28,7 +29,7 @@ try {
             "currency" => $user['currency']
         ]);
     } else {
-        echo json_encode(["status" => "error", "message" => "User not found"]);
+        echo json_encode(["status" => "error", "message" => "Invalid token!"]);
     }
 } catch (PDOException $e) {
     echo json_encode(["status" => "error", "message" => "Database error: " . $e->getMessage()]);
