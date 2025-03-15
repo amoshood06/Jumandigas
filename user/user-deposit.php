@@ -38,7 +38,7 @@ if (!$user) {
 }
 
 // Set currency based on country
-$currency = ($user['country'] == 'Nigeria') ? 'NGN' : (($user['country'] == 'Ghana') ? 'GHS' : 'USD');
+$currency = ($user['country'] == 'Nigeria') ? 'NGN' : (($user['country'] == 'Ghana') ? 'GHS' : 'NGN');
 
 // Flutterwave credentials
 $public_key = "FLWPUBK-35614b38c377f9f0c86ce78c4ee9c6e0-X";
