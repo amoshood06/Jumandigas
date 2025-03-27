@@ -24,7 +24,6 @@ $database = "jumandigas-353038374f79"; // Change to your database name
 $user = "jumandigas"; // Change to your database username
 $password = "ks2bs8a8ak"; // Change to your database password
 
-
 // Create database connection
 $conn = new mysqli($host, $user, $password, $database);
 
@@ -104,7 +103,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     $gas_price = $gas_result->fetch_assoc();
     
     $price_per_kg = $gas_price ? $gas_price['price'] : 0;
-    $gas_currency = $gas_price ? $gas_price['currency'] : $user['currency'];
+    $gas_currency = $gas_price ? $gas_price['currency'] : 
+                ($user['country'] == 'ghana' ? 'GHS' : 'NGN');
     
     // Fetch bike price based on user's location
     $bike_sql = "SELECT price FROM bike WHERE country = ? AND state = ? AND city = ?";

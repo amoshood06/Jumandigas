@@ -113,7 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
             "name" => $user['full_name'],
             "email" => $user['email'],
             "balance" => $user['balance'],
-            "currency" => $user['currency'],
+            "currency" => $user['country'] == 'ghana' ? ($user['currency'] ?? 'GHS') : ($user['currency'] ?? 'NGN'),
             "country" => $user['country']
         ],
         "payment_history" => $history
@@ -147,7 +147,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         "tx_ref" => $tx_ref,
         "amount" => $amount,
         "currency" => $currency,
-        "redirect_url" => "http://locahost/jumandi/api/callback.php", // Replace with your callback URL
+        "redirect_url" => "https://jumandigas.com/api/callback.php", // Replace with your callback URL
         "customer" => [
             "email" => $user['email'],
             "name" => $user['full_name']
