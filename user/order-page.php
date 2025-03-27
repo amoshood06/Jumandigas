@@ -186,25 +186,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <!-- 1kg Gas Option -->
                     <div class="flex flex-col p-4 bg-white rounded-lg shadow">
                         <div>
-                            <h3 class="font-semibold">Your Cylinder</h3>
+                            <h3 class="font-semibold">Select Cylinder Size</h3>
                         </div>
                        <select type="text" name="cylinder_type" required class="w-full p-2 border rounded mb-2">
                         <option value="">Select cylinder</option>
                         <option value="1kg">1kg</option>
                         <option value="3kg">3kg</option>
                         <option value="4kg">4kg</option>
+                        <option value="6kg">6kg</option>
+                        <option value="11.5kg">11.5kg</option>
+                        <option value="12kg">12kg</option>
                        </select>
                     </div>
                     
                     <!-- exchange Option -->
                     <div class="flex flex-col p-4 bg-white rounded-lg shadow">
                         <div>
-                            <h3 class="font-semibold">Cylinder Exchange</h3>
+                            <h3 class="font-semibold">Booking Mode</h3>
                         </div>
                        <select type="text" name="exchange" required class="w-full p-2 border rounded mb-2">
                         <option value="">Select</option>
                         <option value="exchange">Exchange</option>
-                        <option value="pick return">Pick Return</option>
+                        <option value="pick and return">Pick and Return</option>
                        </select>
                     </div>
                     
@@ -212,7 +215,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <!-- amount of kg -->
                     <div class="flex flex-col p-4 bg-white rounded-lg shadow">
                         <div>
-                            <h3 class="font-semibold">Amount of kg</h3>
+                            <h3 class="font-semibold">Quantity of Gas</h3>
                         </div>
                         
                         <input type="number" name="amount_kg" id="amount_kg" required class="w-full p-2 border rounded mb-2" oninput="calculateTotal()">
