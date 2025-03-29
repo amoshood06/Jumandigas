@@ -163,64 +163,11 @@ $orders = $stmt->fetchAll();
 
             <!-- Dashboard Content -->
             <div class="flex-1">
-                <!-- Action Cards - visible on all devices -->
-                <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
-                    <div class="bg-[#ff6b00] p-4 rounded-lg text-white text-center">
-                        <div class="mb-2">⬇️</div>
-                        <div class="text-sm">Deposit</div>
-                    </div>
-                    <a href="order-page.php">
-                    <div class="bg-[#ff6b00] p-4 rounded-lg text-white text-center">
-                        <div class="mb-2">🚚</div>
-                        <div class="text-sm">Orders Gas</div>
-                    </div>
-                    </a>
-                    <a href="buy-cylinder.php"></a>
-                    <div class="bg-[#ff6b00] p-4 rounded-lg text-white text-center">
-                        <div class="mb-2">🛒</div>
-                        <div class="text-sm">Buy Cylinder</div>
-                    </div>
-                    </a>
-                    <!-- <div class="bg-[#ff6b00] p-4 rounded-lg text-white text-center">
-                        <div class="text-2xl font-bold">5</div>
-                        <div class="text-sm">Total Orders</div>
-                    </div> -->
-                </div>
-
-                <!-- Transaction Table -->
-                <div class="bg-gray-200 rounded-lg overflow-x-auto">
-    <table class="w-full">
-        <thead class="bg-[#ff6b00] text-white">
-            <tr>
-                <th class="p-2 lg:p-4 text-left">Type</th>
-                <th class="p-2 lg:p-4 text-left">Tracking</th>
-                <th class="p-2 lg:p-4 text-left">Amount</th>
-                <th class="p-2 lg:p-4 text-left hidden sm:table-cell">Transaction ID</th>
-                <th class="p-2 lg:p-4 text-left hidden md:table-cell">Date / Time</th>
-            </tr>
-        </thead>
-        <tbody>
-        <?php foreach ($orders as $order) { ?>
-            <tr class="border-b border-gray-300">
-                <td class="p-2 lg:p-4"><?= htmlspecialchars($order['Type']) ?></td>
-                <td class="p-2 lg:p-4"><?= htmlspecialchars($order['tracking_id']) ?></td>
-                <td class="p-2 lg:p-4"><?= htmlspecialchars($order['Amount']) ?></td>
-                <td class="p-2 lg:p-4 hidden sm:table-cell"><?= htmlspecialchars($order['Transaction ID']) ?></td>
-                <td class="p-2 lg:p-4 hidden md:table-cell"><?= htmlspecialchars($order['Date / Time']) ?></td>
-            </tr>
-        <?php } ?>
-        </tbody>
-    </table>
+                
+               
+    
 </div>
-                <!-- Pagination Controls -->
-                <div class="flex justify-center gap-4 mt-6">
-                    <?php if ($page > 1): ?>
-                        <a href="?page=<?= $page - 1 ?>" class="bg-[#ff6b00] text-white px-4 py-2 rounded-lg text-sm">← Prev</a>
-                    <?php endif; ?>
-
-                    <?php if ($page < $total_pages): ?>
-                        <a href="?page=<?= $page + 1 ?>" class="bg-[#ff6b00] text-white px-4 py-2 rounded-lg text-sm">Next →</a>
-                    <?php endif; ?>
+        
                 </div>
                 </div>
             </div>
