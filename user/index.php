@@ -128,7 +128,7 @@ $orders = $stmt->fetchAll();
         </div>
     </div>
     <a href="user-complaint.php" class="block p-3 hover:bg-orange-100 rounded-lg">Complain</a>
-    <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Setting</a>
+    <a href="user-profile.php" class="block p-3 hover:bg-orange-100 rounded-lg">Setting</a>
 </nav>
 
 
@@ -148,10 +148,7 @@ $orders = $stmt->fetchAll();
                                     <div class="mb-2">🛒</div>
                                     <div>Buy Cylinder</div>
                                 </a>
-                                <a href="user-order-history.php" class="bg-[#ff6b00] p-4 rounded-lg text-white text-center">
-                                    <div class="text-2xl font-bold">5</div>
-                                    <div>Total Orders</div>
-                                </a>
+            
                             </div>
                         </div>
                     </div>
@@ -181,10 +178,6 @@ $orders = $stmt->fetchAll();
                         <div class="text-sm">Buy Cylinder</div>
                     </div>
                     </a>
-                    <!-- <div class="bg-[#ff6b00] p-4 rounded-lg text-white text-center">
-                        <div class="text-2xl font-bold">5</div>
-                        <div class="text-sm">Total Orders</div>
-                    </div> -->
                 </div>
 
                 <!-- Transaction Table -->

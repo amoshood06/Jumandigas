@@ -249,10 +249,7 @@ function getStepStatus($orderStatus, $step) {
                                     <div class="mb-2">🛒</div>
                                     <div>Buy Cylinder</div>
                                 </a>
-                                <a href="user-order-history.php" class="bg-[#ff6b00] p-4 rounded-lg text-white text-center">
-                                    <div class="text-2xl font-bold">5</div>
-                                    <div>Total Orders</div>
-                                </a>
+                        
                             </div>
                         </div>
                     </div>

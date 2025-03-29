@@ -86,7 +86,7 @@ if ($_SESSION['role'] != 'vendor') {
                 
                 <!-- Quick Stats -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                    <div class="bg-[#ff6b00] p-4 rounded-lg text-white text-center">
+                    <!-- <div class="bg-[#ff6b00] p-4 rounded-lg text-white text-center">
                         <div class="text-2xl font-bold mb-2">150</div>
                         <div class="text-sm">Total Orders</div>
                     </div>
@@ -101,7 +101,7 @@ if ($_SESSION['role'] != 'vendor') {
                     <div class="bg-[#ff6b00] p-4 rounded-lg text-white text-center">
                         <div class="text-2xl font-bold mb-2">4.8</div>
                         <div class="text-sm">Average Rating</div>
-                    </div>
+                    </div> -->
                 </div>
 
                 <!-- Recent Orders -->

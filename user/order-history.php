@@ -90,7 +90,7 @@ $orders = $stmt->fetchAll();
     <a href="index.php" class="block p-3 bg-[#ff6b00] text-white rounded-lg">Home</a>
     <a href="user-deposit.php" class="block p-3 hover:bg-orange-100 rounded-lg">Deposit</a>
     <a href="item-tracking.php" class="block p-3 hover:bg-orange-100 rounded-lg">Track</a>
-    <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Buy Cylinder</a>
+    <a href="buy-cylinder.php" class="block p-3 hover:bg-orange-100 rounded-lg">Buy Cylinder</a>
     <!-- Order Gas Dropdown -->
     <div class="relative group">
         <button class="block w-full text-left p-3 hover:bg-orange-100 rounded-lg">Order Gas</button>
