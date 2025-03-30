@@ -1,9 +1,74 @@
 <?php
 require_once "../auth_check.php";
-if ($_SESSION['role'] != 'vendor') {
-    header("Location: ../login.php");
+// Check if user is logged in and is a vendor
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'vendor') {
+    // Redirect to login page if not logged in or not a vendor
+    header("Location: login.php");
     exit();
 }
+
+// Include database connection
+require_once '../db/db.php';
+
+// Get vendor ID from session
+$vendor_id = $_SESSION['user_id'];
+
+// Initialize dashboard data
+$total_orders = 0;
+$total_revenue = 0;
+$gas_in_stock = 0;
+$average_rating = 0;
+
+try {
+    // Get total orders for this vendor
+    $stmt = $pdo->prepare("
+        SELECT COUNT(*) as total_orders 
+        FROM orders 
+        WHERE vendor_id = ?
+    ");
+    $stmt->execute([$vendor_id]);
+    $result = $stmt->fetch();
+    $total_orders = $result['total_orders'];
+    
+    // Get total revenue for this vendor
+    $stmt = $pdo->prepare("
+        SELECT SUM(total_price) as total_revenue 
+        FROM orders 
+        WHERE vendor_id = ? AND status = 'delivered'
+    ");
+    $stmt->execute([$vendor_id]);
+    $result = $stmt->fetch();
+    $total_revenue = $result['total_revenue'] ?: 0;
+    
+    // Get gas in stock for this vendor
+    $stmt = $pdo->prepare("
+        SELECT SUM(quantity_kg) as gas_in_stock 
+        FROM inventory 
+        WHERE vendor_id = ?
+    ");
+    $stmt->execute([$vendor_id]);
+    $result = $stmt->fetch();
+    $gas_in_stock = $result['gas_in_stock'] ?: 0;
+    
+    // Get average rating for this vendor
+    $stmt = $pdo->prepare("
+        SELECT AVG(rating) as average_rating 
+        FROM reviews 
+        WHERE vendor_id = ?
+    ");
+    $stmt->execute([$vendor_id]);
+    $result = $stmt->fetch();
+    $average_rating = $result['average_rating'] ?: 0;
+    
+} catch (PDOException $e) {
+    // Log error but continue with default values
+    error_log("Dashboard data fetch error: " . $e->getMessage());
+}
+
+// Format the values for display
+$formatted_revenue = '₦' . number_format($total_revenue, 2);
+$formatted_gas = number_format($gas_in_stock) . 'kg';
+$formatted_rating = number_format($average_rating, 1);
 ?>
 
 <!DOCTYPE html>
@@ -85,24 +150,25 @@ if ($_SESSION['role'] != 'vendor') {
                 <h1 class="text-2xl font-bold mb-6">Vendor Dashboard</h1>
                 
                 <!-- Quick Stats -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                    <!-- <div class="bg-[#ff6b00] p-4 rounded-lg text-white text-center">
-                        <div class="text-2xl font-bold mb-2">150</div>
-                        <div class="text-sm">Total Orders</div>
-                    </div>
-                    <div class="bg-[#ff6b00] p-4 rounded-lg text-white text-center">
-                        <div class="text-2xl font-bold mb-2">₦500,000</div>
-                        <div class="text-sm">Total Revenue</div>
-                    </div>
-                    <div class="bg-[#ff6b00] p-4 rounded-lg text-white text-center">
-                        <div class="text-2xl font-bold mb-2">500kg</div>
-                        <div class="text-sm">Gas in Stock</div>
-                    </div>
-                    <div class="bg-[#ff6b00] p-4 rounded-lg text-white text-center">
-                        <div class="text-2xl font-bold mb-2">4.8</div>
-                        <div class="text-sm">Average Rating</div>
-                    </div> -->
-                </div>
+                <!-- Dashboard Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div class="bg-[#ff6b00] p-4 rounded-lg text-white text-center">
+        <div class="text-2xl font-bold mb-2"><?php echo $total_orders; ?></div>
+        <div class="text-sm">Total Orders</div>
+    </div>
+    <div class="bg-[#ff6b00] p-4 rounded-lg text-white text-center">
+        <div class="text-2xl font-bold mb-2"><?php echo $formatted_revenue; ?></div>
+        <div class="text-sm">Total Revenue</div>
+    </div>
+    <div class="bg-[#ff6b00] p-4 rounded-lg text-white text-center">
+        <div class="text-2xl font-bold mb-2"><?php echo $formatted_gas; ?></div>
+        <div class="text-sm">Gas in Stock</div>
+    </div>
+    <div class="bg-[#ff6b00] p-4 rounded-lg text-white text-center">
+        <div class="text-2xl font-bold mb-2"><?php echo $formatted_rating; ?></div>
+        <div class="text-sm">Average Rating</div>
+    </div>
+</div>
 
                 <!-- Recent Orders -->
                 <div class="bg-white shadow rounded-lg p-4 sm:p-6 mb-6 overflow-x-auto">

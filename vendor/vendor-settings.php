@@ -1,3 +1,137 @@
+<?php
+// Start the session (if not already started)
+session_start();
+
+// Check if user is logged in and is a vendor
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'vendor') {
+    // Redirect to login page if not logged in or not a vendor
+    header("Location: login.php");
+    exit();
+}
+
+// Include database connection
+require_once '../db/db.php';
+
+// Get vendor ID from session
+$vendor_id = $_SESSION['user_id'];
+
+// Initialize message variables
+$success_message = '';
+$error_message = '';
+
+// Handle form submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Process profile information update
+    if (isset($_POST['update_profile'])) {
+        $vendorName = trim($_POST['vendorName']);
+        $email = trim($_POST['email']);
+        $phone = trim($_POST['phone']);
+        $address = trim($_POST['address']);
+        $country = trim($_POST['country']);
+        $state = trim($_POST['state']);
+        $city = trim($_POST['city']);
+        
+        // Validate inputs
+        if (empty($vendorName) || empty($email) || empty($phone) || empty($address)) {
+            $error_message = "All fields are required";
+        } else {
+            try {
+                // Update vendor information
+                $stmt = $pdo->prepare("
+                    UPDATE users 
+                    SET full_name = ?, email = ?, phone = ?, address = ?, 
+                        country = ?, state = ?, city = ?
+                    WHERE id = ? AND role = 'vendor'
+                ");
+                
+                $stmt->execute([
+                    $vendorName, $email, $phone, $address,
+                    $country, $state, $city,
+                    $vendor_id
+                ]);
+                
+                $success_message = "Profile information updated successfully";
+            } catch (PDOException $e) {
+                $error_message = "Error updating profile: " . $e->getMessage();
+            }
+        }
+    }
+    
+    // Process password change
+    if (isset($_POST['change_password'])) {
+        $currentPassword = $_POST['currentPassword'];
+        $newPassword = $_POST['newPassword'];
+        $confirmPassword = $_POST['confirmPassword'];
+        
+        // Validate inputs
+        if (empty($currentPassword) || empty($newPassword) || empty($confirmPassword)) {
+            $error_message = "All password fields are required";
+        } elseif ($newPassword !== $confirmPassword) {
+            $error_message = "New passwords do not match";
+        } elseif (strlen($newPassword) < 8) {
+            $error_message = "Password must be at least 8 characters long";
+        } else {
+            try {
+                // Verify current password
+                $stmt = $pdo->prepare("SELECT password FROM users WHERE id = ?");
+                $stmt->execute([$vendor_id]);
+                $user = $stmt->fetch();
+                
+                if ($user && password_verify($currentPassword, $user['password'])) {
+                    // Hash the new password
+                    $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
+                    
+                    // Update password
+                    $stmt = $pdo->prepare("UPDATE users SET password = ? WHERE id = ?");
+                    $stmt->execute([$hashedPassword, $vendor_id]);
+                    
+                    $success_message = "Password updated successfully";
+                } else {
+                    $error_message = "Current password is incorrect";
+                }
+            } catch (PDOException $e) {
+                $error_message = "Error updating password: " . $e->getMessage();
+            }
+        }
+    }
+    
+    // Process business hours update
+    if (isset($_POST['update_hours'])) {
+        $openTime = $_POST['openTime'];
+        $closeTime = $_POST['closeTime'];
+        
+        // Here you would update the business hours in your database
+        // This would require adding a business_hours table or columns to the users table
+        $success_message = "Business hours updated successfully";
+    }
+    
+    // Process notification settings
+    if (isset($_POST['update_notifications'])) {
+        $emailNotifications = isset($_POST['emailNotifications']) ? 1 : 0;
+        $smsNotifications = isset($_POST['smsNotifications']) ? 1 : 0;
+        
+        // Here you would update the notification settings in your database
+        // This would require adding notification_settings columns to the users table
+        $success_message = "Notification settings updated successfully";
+    }
+}
+
+// Fetch vendor information from database
+try {
+    $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ? AND role = 'vendor'");
+    $stmt->execute([$vendor_id]);
+    $vendor = $stmt->fetch();
+    
+    if (!$vendor) {
+        // Vendor not found or not a vendor
+        header("Location: login.php");
+        exit();
+    }
+} catch (PDOException $e) {
+    die("Error fetching vendor data: " . $e->getMessage());
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -30,7 +164,7 @@
 
         <div class="text-white">
             <p class="text-sm">Vendor Account</p>
-            <p class="text-2xl font-bold">Vendor Name</p>
+            <p class="text-2xl font-bold"><?php echo htmlspecialchars($vendor['full_name']); ?></p>
         </div>
         <a href="logout.php">
             <button class="bg-gray-200 px-6 py-2 rounded-full font-bold">Logout</button>
@@ -52,17 +186,13 @@
                     </div>
 
                     <div class="flex-grow overflow-y-auto">
-                        <!-- <div class="flex flex-col items-center my-8">
-                            <img src="/placeholder.svg?height=100&width=100" alt="Vendor Profile" class="rounded-full w-24 h-24 mb-4">
-                            <h2 class="text-xl font-semibold">Vendor Name</h2>
-                        </div> -->
-                        
-                        <nav class="space-y-2 px-4">
+                        <nav class="space-y-2 px-4 mt-6">
                             <a href="index.php" class="block p-3 hover:bg-orange-100 rounded-lg">Dashboard</a>
                             <a href="Withdrawal.php" class="block p-3 hover:bg-orange-100 rounded-lg">Withdrawal</a>
                             <a href="vendor-order-management.php" class="block p-3 hover:bg-orange-100 rounded-lg">Orders</a>
                             <a href="vendor-transactions.php" class="block p-3 hover:bg-orange-100 rounded-lg">Transactions</a>
                             <a href="vendor-report.php" class="block p-3 hover:bg-orange-100 rounded-lg">Reports</a>
+                            <a href="profile.php" class="block p-3 hover:bg-orange-100 rounded-lg">Profile</a>
                             <a href="vendor-settings.php" class="block p-3 bg-[#ff6b00] text-white rounded-lg">Settings</a>
                         </nav>
                     </div>
@@ -76,33 +206,64 @@
             <div class="flex-1 w-full">
                 <h1 class="text-2xl font-bold mb-6">Vendor Settings</h1>
                 
+                <?php if (!empty($success_message)): ?>
+                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+                    <?php echo $success_message; ?>
+                </div>
+                <?php endif; ?>
+                
+                <?php if (!empty($error_message)): ?>
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                    <?php echo $error_message; ?>
+                </div>
+                <?php endif; ?>
+                
                 <div class="bg-white shadow rounded-lg p-6">
-                    <form id="settingsForm">
-                        <!-- Profile Information -->
+                    <!-- Profile Information -->
+                    <form method="POST" action="">
                         <div class="mb-6">
                             <h2 class="text-lg font-semibold mb-4">Profile Information</h2>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label for="vendorName" class="block text-sm font-medium text-gray-700 mb-1">Vendor Name</label>
-                                    <input type="text" id="vendorName" name="vendorName" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#ff6b00] focus:border-[#ff6b00]" value="Jumandi Gas Vendor">
+                                    <input type="text" id="vendorName" name="vendorName" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#ff6b00] focus:border-[#ff6b00]" value="<?php echo htmlspecialchars($vendor['full_name']); ?>">
                                 </div>
                                 <div>
                                     <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-                                    <input type="email" id="email" name="email" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#ff6b00] focus:border-[#ff6b00]" value="vendor@jumandigas.com">
+                                    <input type="email" id="email" name="email" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#ff6b00] focus:border-[#ff6b00]" value="<?php echo htmlspecialchars($vendor['email']); ?>">
                                 </div>
                                 <div>
                                     <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                                    <input type="tel" id="phone" name="phone" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#ff6b00] focus:border-[#ff6b00]" value="+234 123 456 7890">
+                                    <input type="tel" id="phone" name="phone" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#ff6b00] focus:border-[#ff6b00]" value="<?php echo htmlspecialchars($vendor['phone']); ?>">
                                 </div>
                                 <div>
                                     <label for="address" class="block text-sm font-medium text-gray-700 mb-1">Business Address</label>
-                                    <input type="text" id="address" name="address" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#ff6b00] focus:border-[#ff6b00]" value="123 Gas Street, Lagos, Nigeria">
+                                    <input type="text" id="address" name="address" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#ff6b00] focus:border-[#ff6b00]" value="<?php echo htmlspecialchars($vendor['address']); ?>">
+                                </div>
+                                <div>
+                                    <label for="country" class="block text-sm font-medium text-gray-700 mb-1">Country</label>
+                                    <input type="text" id="country" name="country" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#ff6b00] focus:border-[#ff6b00]" value="<?php echo htmlspecialchars($vendor['country']); ?>">
+                                </div>
+                                <div>
+                                    <label for="state" class="block text-sm font-medium text-gray-700 mb-1">State</label>
+                                    <input type="text" id="state" name="state" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#ff6b00] focus:border-[#ff6b00]" value="<?php echo htmlspecialchars($vendor['state']); ?>">
+                                </div>
+                                <div>
+                                    <label for="city" class="block text-sm font-medium text-gray-700 mb-1">City</label>
+                                    <input type="text" id="city" name="city" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#ff6b00] focus:border-[#ff6b00]" value="<?php echo htmlspecialchars($vendor['city']); ?>">
                                 </div>
                             </div>
+                            <div class="mt-4 flex justify-end">
+                                <button type="submit" name="update_profile" class="px-6 py-2 bg-[#ff6b00] text-white rounded-md hover:bg-[#e05e00] focus:outline-none focus:ring-2 focus:ring-[#ff6b00] focus:ring-offset-2">
+                                    Update Profile
+                                </button>
+                            </div>
                         </div>
+                    </form>
 
-                        <!-- Business Hours -->
-                        <div class="mb-6">
+                    <!-- Business Hours -->
+                    <form method="POST" action="">
+                        <div class="mb-6 pt-6 border-t border-gray-200">
                             <h2 class="text-lg font-semibold mb-4">Business Hours</h2>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
@@ -114,10 +275,17 @@
                                     <input type="time" id="closeTime" name="closeTime" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#ff6b00] focus:border-[#ff6b00]" value="18:00">
                                 </div>
                             </div>
+                            <div class="mt-4 flex justify-end">
+                                <button type="submit" name="update_hours" class="px-6 py-2 bg-[#ff6b00] text-white rounded-md hover:bg-[#e05e00] focus:outline-none focus:ring-2 focus:ring-[#ff6b00] focus:ring-offset-2">
+                                    Update Hours
+                                </button>
+                            </div>
                         </div>
+                    </form>
 
-                        <!-- Notification Settings -->
-                        <div class="mb-6">
+                    <!-- Notification Settings -->
+                    <form method="POST" action="">
+                        <div class="mb-6 pt-6 border-t border-gray-200">
                             <h2 class="text-lg font-semibold mb-4">Notification Settings</h2>
                             <div class="space-y-2">
                                 <div class="flex items-center">
@@ -133,10 +301,17 @@
                                     </label>
                                 </div>
                             </div>
+                            <div class="mt-4 flex justify-end">
+                                <button type="submit" name="update_notifications" class="px-6 py-2 bg-[#ff6b00] text-white rounded-md hover:bg-[#e05e00] focus:outline-none focus:ring-2 focus:ring-[#ff6b00] focus:ring-offset-2">
+                                    Update Notifications
+                                </button>
+                            </div>
                         </div>
+                    </form>
 
-                        <!-- Password Change -->
-                        <div class="mb-6">
+                    <!-- Password Change -->
+                    <form method="POST" action="">
+                        <div class="mb-6 pt-6 border-t border-gray-200">
                             <h2 class="text-lg font-semibold mb-4">Change Password</h2>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
@@ -152,13 +327,11 @@
                                     <input type="password" id="confirmPassword" name="confirmPassword" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#ff6b00] focus:border-[#ff6b00]">
                                 </div>
                             </div>
-                        </div>
-
-                        <!-- Save Button -->
-                        <div class="flex justify-end">
-                            <button type="submit" class="px-6 py-2 bg-[#ff6b00] text-white rounded-md hover:bg-[#e05e00] focus:outline-none focus:ring-2 focus:ring-[#ff6b00] focus:ring-offset-2">
-                                Save Changes
-                            </button>
+                            <div class="mt-4 flex justify-end">
+                                <button type="submit" name="change_password" class="px-6 py-2 bg-[#ff6b00] text-white rounded-md hover:bg-[#e05e00] focus:outline-none focus:ring-2 focus:ring-[#ff6b00] focus:ring-offset-2">
+                                    Change Password
+                                </button>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -200,16 +373,6 @@
             } else {
                 sidebar.classList.add('-translate-x-full');
             }
-        });
-
-        // Handle form submission
-        document.getElementById('settingsForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            // In a real application, you would send this data to your server
-            console.log('Settings form submitted');
-            
-            // Simulate a successful save
-            alert('Settings saved successfully!');
         });
     </script>
 </body>

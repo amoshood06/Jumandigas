@@ -1,3 +1,123 @@
+<?php
+// Start the session (if not already started)
+session_start();
+
+// Check if user is logged in and is a rider
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'rider') {
+    // Redirect to login page if not logged in or not a rider
+    header("Location: ../login.php");
+    exit();
+}
+
+// Include database connection
+require_once '../db/db.php';
+
+// Get rider ID from session
+$rider_id = $_SESSION['user_id'];
+
+// Initialize message variables
+$success_message = '';
+$error_message = '';
+
+// Handle form submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Process profile information update
+    if (isset($_POST['update_profile'])) {
+        $firstName = trim($_POST['firstName']);
+        $lastName = trim($_POST['lastName']);
+        $fullName = $firstName . ' ' . $lastName;
+        $email = trim($_POST['email']);
+        $phone = trim($_POST['phone']);
+        
+        // Validate inputs
+        if (empty($firstName) || empty($lastName) || empty($email) || empty($phone)) {
+            $error_message = "All fields are required";
+        } else {
+            try {
+                // Check if email already exists for another user
+                $stmt = $pdo->prepare("SELECT id FROM users WHERE email = ? AND id != ?");
+                $stmt->execute([$email, $rider_id]);
+                if ($stmt->rowCount() > 0) {
+                    $error_message = "Email already in use by another account";
+                } else {
+                    // Update rider information
+                    $stmt = $pdo->prepare("
+                        UPDATE users 
+                        SET full_name = ?, email = ?, phone = ?
+                        WHERE id = ? AND role = 'rider'
+                    ");
+                    
+                    $stmt->execute([$fullName, $email, $phone, $rider_id]);
+                    
+                    $success_message = "Profile information updated successfully";
+                }
+            } catch (PDOException $e) {
+                $error_message = "Error updating profile: " . $e->getMessage();
+            }
+        }
+    }
+    
+    // Process password change
+    if (isset($_POST['change_password'])) {
+        $currentPassword = $_POST['currentPassword'];
+        $newPassword = $_POST['newPassword'];
+        $confirmPassword = $_POST['confirmPassword'];
+        
+        // Validate inputs
+        if (empty($currentPassword) || empty($newPassword) || empty($confirmPassword)) {
+            $error_message = "All password fields are required";
+        } elseif ($newPassword !== $confirmPassword) {
+            $error_message = "New passwords do not match";
+        } elseif (strlen($newPassword) < 8) {
+            $error_message = "Password must be at least 8 characters long";
+        } else {
+            try {
+                // Verify current password
+                $stmt = $pdo->prepare("SELECT password FROM users WHERE id = ?");
+                $stmt->execute([$rider_id]);
+                $user = $stmt->fetch();
+                
+                if ($user && password_verify($currentPassword, $user['password'])) {
+                    // Hash the new password
+                    $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
+                    
+                    // Update password
+                    $stmt = $pdo->prepare("UPDATE users SET password = ? WHERE id = ?");
+                    $stmt->execute([$hashedPassword, $rider_id]);
+                    
+                    $success_message = "Password updated successfully";
+                } else {
+                    $error_message = "Current password is incorrect";
+                }
+            } catch (PDOException $e) {
+                $error_message = "Error updating password: " . $e->getMessage();
+            }
+        }
+    }
+}
+
+// Fetch rider information from database
+try {
+    $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ? AND role = 'rider'");
+    $stmt->execute([$rider_id]);
+    $rider = $stmt->fetch();
+    
+    if (!$rider) {
+        // Rider not found or not a rider
+        header("Location: login.php");
+        exit();
+    }
+    
+    // Get rider's name parts
+    $name_parts = explode(' ', $rider['full_name'], 2);
+    $first_name = $name_parts[0];
+    $last_name = isset($name_parts[1]) ? $name_parts[1] : '';
+    
+} catch (PDOException $e) {
+    die("Error fetching rider data: " . $e->getMessage());
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -30,7 +150,7 @@
 
         <div class="text-white">
             <p class="text-sm">Rider Account</p>
-            <p class="text-2xl font-bold">John Doe</p>
+            <p class="text-2xl font-bold"><?php echo htmlspecialchars($rider['full_name']); ?></p>
         </div>
         <a href="logout.php">
             <button class="bg-gray-200 px-6 py-2 rounded-full font-bold">Logout</button>
@@ -52,18 +172,13 @@
                     </div>
 
                     <div class="flex-grow overflow-y-auto">
-                        <!-- <div class="flex flex-col items-center my-8">
-                            <img src="/placeholder.svg?height=100&width=100" alt="Rider Profile" class="rounded-full w-24 h-24 mb-4">
-                            <h2 class="text-xl font-semibold">John Doe</h2>
-                            <p class="text-sm text-gray-500">Rider ID: R12345</p>
-                        </div> -->
-                        
-                        <nav class="space-y-2 px-4">
-                            <a href="index.php" class="block p-3 bg-[#ff6b00] text-white rounded-lg">Dashboard</a>
+                        <nav class="space-y-2 px-4 mt-6">
+                            <a href="index.php" class="block p-3 hover:bg-orange-100 rounded-lg">Dashboard</a>
                             <a href="rider-pending-deliveries.php" class="block p-3 hover:bg-orange-100 rounded-lg">Pending Deliveries</a>
                             <a href="rider-delivery-history.php" class="block p-3 hover:bg-orange-100 rounded-lg">Delivery History</a>
                             <a href="rider-performance.php" class="block p-3 hover:bg-orange-100 rounded-lg">My Performance</a>
-                            <a href="rider-settings.php" class="block p-3 hover:bg-orange-100 rounded-lg">Settings</a>
+                            <a href="rider_profile.php" class="block p-3 hover:bg-orange-100 rounded-lg">Profile</a>
+                            <a href="rider-settings.php" class="block p-3 bg-[#ff6b00] text-white rounded-lg">Settings</a>
                         </nav>
                     </div>
                 </div>
@@ -76,73 +191,43 @@
             <div class="flex-1 w-full">
                 <h1 class="text-2xl font-bold mb-6">Settings</h1>
                 
+                <?php if (!empty($success_message)): ?>
+                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+                    <?php echo $success_message; ?>
+                </div>
+                <?php endif; ?>
+                
+                <?php if (!empty($error_message)): ?>
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                    <?php echo $error_message; ?>
+                </div>
+                <?php endif; ?>
+                
                 <!-- Profile Information -->
                 <div class="bg-white shadow rounded-lg p-6 mb-6">
                     <h2 class="text-xl font-semibold mb-4">Profile Information</h2>
-                    <form id="profileForm">
+                    <form id="profileForm" method="POST" action="">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label for="firstName" class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
-                                <input type="text" id="firstName" name="firstName" value="John" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#ff6b00] focus:border-[#ff6b00]">
+                                <input type="text" id="firstName" name="firstName" value="<?php echo htmlspecialchars($first_name); ?>" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#ff6b00] focus:border-[#ff6b00]">
                             </div>
                             <div>
                                 <label for="lastName" class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-                                <input type="text" id="lastName" name="lastName" value="Doe" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#ff6b00] focus:border-[#ff6b00]">
+                                <input type="text" id="lastName" name="lastName" value="<?php echo htmlspecialchars($last_name); ?>" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#ff6b00] focus:border-[#ff6b00]">
                             </div>
                             <div>
                                 <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                                <input type="email" id="email" name="email" value="john.doe@example.com" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#ff6b00] focus:border-[#ff6b00]">
+                                <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($rider['email']); ?>" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#ff6b00] focus:border-[#ff6b00]">
                             </div>
                             <div>
                                 <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                                <input type="tel" id="phone" name="phone" value="+234 123 456 7890" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#ff6b00] focus:border-[#ff6b00]">
+                                <input type="tel" id="phone" name="phone" value="<?php echo htmlspecialchars($rider['phone']); ?>" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#ff6b00] focus:border-[#ff6b00]">
                             </div>
                         </div>
                         <div class="mt-4">
-                            <button type="submit" class="px-4 py-2 bg-[#ff6b00] text-white rounded-md hover:bg-[#e05e00] focus:outline-none focus:ring-2 focus:ring-[#ff6b00] focus:ring-opacity-50">
+                            <button type="submit" name="update_profile" class="px-4 py-2 bg-[#ff6b00] text-white rounded-md hover:bg-[#e05e00] focus:outline-none focus:ring-2 focus:ring-[#ff6b00] focus:ring-opacity-50">
                                 Update Profile
-                            </button>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- Notification Preferences -->
-                <div class="bg-white shadow rounded-lg p-6 mb-6">
-                    <h2 class="text-xl font-semibold mb-4">Notification Preferences</h2>
-                    <form id="notificationForm">
-                        <div class="space-y-4">
-                            <div class="flex items-center justify-between">
-                                <span class="text-sm font-medium text-gray-700">New Order Notifications</span>
-                                <label class="switch">
-                                    <input type="checkbox" checked>
-                                    <span class="slider round"></span>
-                                </label>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <span class="text-sm font-medium text-gray-700">Order Status Updates</span>
-                                <label class="switch">
-                                    <input type="checkbox" checked>
-                                    <span class="slider round"></span>
-                                </label>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <span class="text-sm font-medium text-gray-700">Performance Reports</span>
-                                <label class="switch">
-                                    <input type="checkbox">
-                                    <span class="slider round"></span>
-                                </label>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <span class="text-sm font-medium text-gray-700">Email Notifications</span>
-                                <label class="switch">
-                                    <input type="checkbox" checked>
-                                    <span class="slider round"></span>
-                                </label>
-                            </div>
-                        </div>
-                        <div class="mt-4">
-                            <button type="submit" class="px-4 py-2 bg-[#ff6b00] text-white rounded-md hover:bg-[#e05e00] focus:outline-none focus:ring-2 focus:ring-[#ff6b00] focus:ring-opacity-50">
-                                Save Preferences
                             </button>
                         </div>
                     </form>
@@ -151,7 +236,7 @@
                 <!-- Account Security -->
                 <div class="bg-white shadow rounded-lg p-6 mb-6">
                     <h2 class="text-xl font-semibold mb-4">Account Security</h2>
-                    <form id="securityForm">
+                    <form id="securityForm" method="POST" action="">
                         <div class="space-y-4">
                             <div>
                                 <label for="currentPassword" class="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
@@ -167,42 +252,8 @@
                             </div>
                         </div>
                         <div class="mt-4">
-                            <button type="submit" class="px-4 py-2 bg-[#ff6b00] text-white rounded-md hover:bg-[#e05e00] focus:outline-none focus:ring-2 focus:ring-[#ff6b00] focus:ring-opacity-50">
+                            <button type="submit" name="change_password" class="px-4 py-2 bg-[#ff6b00] text-white rounded-md hover:bg-[#e05e00] focus:outline-none focus:ring-2 focus:ring-[#ff6b00] focus:ring-opacity-50">
                                 Change Password
-                            </button>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- Vehicle Information -->
-                <div class="bg-white shadow rounded-lg p-6 mb-6">
-                    <h2 class="text-xl font-semibold mb-4">Vehicle Information</h2>
-                    <form id="vehicleForm">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label for="vehicleType" class="block text-sm font-medium text-gray-700 mb-1">Vehicle Type</label>
-                                <select id="vehicleType" name="vehicleType" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#ff6b00] focus:border-[#ff6b00]">
-                                    <option value="motorcycle">Motorcycle</option>
-                                    <option value="car">Car</option>
-                                    <option value="van">Van</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label for="licensePlate" class="block text-sm font-medium text-gray-700 mb-1">License Plate</label>
-                                <input type="text" id="licensePlate" name="licensePlate" value="ABC-123" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#ff6b00] focus:border-[#ff6b00]">
-                            </div>
-                            <div>
-                                <label for="insuranceNumber" class="block text-sm font-medium text-gray-700 mb-1">Insurance Number</label>
-                                <input type="text" id="insuranceNumber" name="insuranceNumber" value="INS-456789" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#ff6b00] focus:border-[#ff6b00]">
-                            </div>
-                            <div>
-                                <label for="lastMaintenance" class="block text-sm font-medium text-gray-700 mb-1">Last Maintenance Date</label>
-                                <input type="date" id="lastMaintenance" name="lastMaintenance" value="2023-05-15" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#ff6b00] focus:border-[#ff6b00]">
-                            </div>
-                        </div>
-                        <div class="mt-4">
-                            <button type="submit" class="px-4 py-2 bg-[#ff6b00] text-white rounded-md hover:bg-[#e05e00] focus:outline-none focus:ring-2 focus:ring-[#ff6b00] focus:ring-opacity-50">
-                                Update Vehicle Information
                             </button>
                         </div>
                     </form>
@@ -210,64 +261,6 @@
             </div>
         </div>
     </main>
-
-    <style>
-        /* Custom switch styles */
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 60px;
-            height: 34px;
-        }
-
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 26px;
-            width: 26px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: .4s;
-        }
-
-        input:checked + .slider {
-            background-color: #ff6b00;
-        }
-
-        input:focus + .slider {
-            box-shadow: 0 0 1px #ff6b00;
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(26px);
-        }
-
-        .slider.round {
-            border-radius: 34px;
-        }
-
-        .slider.round:before {
-            border-radius: 50%;
-        }
-    </style>
 
     <script>
         // Mobile menu functionality
@@ -303,27 +296,6 @@
             } else {
                 sidebar.classList.add('-translate-x-full');
             }
-        });
-
-        // Form submission handlers
-        document.getElementById('profileForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            alert('Profile information updated successfully!');
-        });
-
-        document.getElementById('notificationForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            alert('Notification preferences saved successfully!');
-        });
-
-        document.getElementById('securityForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            alert('Password changed successfully!');
-        });
-
-        document.getElementById('vehicleForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            alert('Vehicle information updated successfully!');
         });
     </script>
 </body>

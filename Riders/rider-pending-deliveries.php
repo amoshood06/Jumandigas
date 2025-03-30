@@ -1,24 +1,48 @@
 <?php
+// Start the session (if not already started)
 session_start();
 
-if ($_SESSION['role'] != 'rider') {
-    header("Location: ../login.php");
+// Check if user is logged in and is a rider
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'rider') {
+    // Redirect to login page if not logged in or not a rider
+    header("Location: login.php");
     exit();
 }
-$_SESSION['user_id'];
 
-require '../db/db.php'; // Include database connection
+// Include database connection
+require_once '../db/db.php';
 
+// Get rider ID
+$rider_id = $_SESSION['user_id'];
+
+// Fetch pending deliveries for this rider
 try {
-    // Fetch today's deliveries
-    $stmt = $pdo->prepare("SELECT o.*, u.full_name, u.country, u.phone, u.state, u.city, o.tracking_id, o.status, o.rider_id 
-                           FROM orders o 
-                           JOIN users u ON o.user_id = u.id 
-                           WHERE DATE(o.created_at) = CURDATE()");
-    $stmt->execute();
-    $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $stmt = $pdo->prepare("
+        SELECT o.*, u.full_name as customer_name, u.address as customer_address, u.phone as customer_phone
+        FROM orders o
+        JOIN users u ON o.user_id = u.id
+        WHERE o.rider_id = ? AND o.status = 'moving'
+        ORDER BY o.created_at DESC
+    ");
+    $stmt->execute([$rider_id]);
+    $pending_deliveries = $stmt->fetchAll();
 } catch (PDOException $e) {
-    die("Error fetching orders: " . $e->getMessage());
+    die("Error fetching pending deliveries: " . $e->getMessage());
+}
+
+// Fetch rider information
+try {
+    $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ? AND role = 'rider'");
+    $stmt->execute([$rider_id]);
+    $rider = $stmt->fetch();
+    
+    if (!$rider) {
+        // Rider not found or not a rider
+        header("Location: login.php");
+        exit();
+    }
+} catch (PDOException $e) {
+    die("Error fetching rider data: " . $e->getMessage());
 }
 ?>
 
@@ -27,7 +51,7 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jumandi Gas - Rider Pending Deliveries</title>
+    <title>Jumandi Gas - Pending Deliveries</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
@@ -40,47 +64,6 @@ try {
             }
         }
     </style>
-    <script>
-        function startDelivery(orderId, trackId) {
-            if (!navigator.geolocation) {
-                alert("Geolocation is not supported by your browser");
-                return;
-            }
-
-            navigator.geolocation.getCurrentPosition(position => {
-                let latitude = position.coords.latitude;
-                let longitude = position.coords.longitude;
-
-                fetch("start_delivery.php", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                    body: `order_id=${orderId}&track_id=${trackId}&latitude=${latitude}&longitude=${longitude}`
-                })
-                .then(response => response.json())
-                .then(data => {
-                    alert(data.message);
-                    if (data.status === "success") location.reload();
-                });
-            }, () => {
-                alert("Please enable location services to start delivery.");
-            });
-        }
-
-        function cancelRider(riderId, orderId) {
-            if (!confirm("Are you sure you want to cancel? A new rider will be assigned.")) return;
-
-            fetch("cancel_rider.php", {
-                method: "POST",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: `rider_id=${riderId}&order_id=${orderId}`
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.message);
-                if (data.status === "success") location.reload();
-            });
-        }
-    </script>
 </head>
 <body class="bg-[#ff6b00]">
     <!-- Header -->
@@ -95,7 +78,7 @@ try {
 
         <div class="text-white">
             <p class="text-sm">Rider Account</p>
-            <p class="text-2xl font-bold">John Doe</p>
+            <p class="text-2xl font-bold"><?php echo htmlspecialchars($rider['full_name']); ?></p>
         </div>
         <a href="logout.php">
             <button class="bg-gray-200 px-6 py-2 rounded-full font-bold">Logout</button>
@@ -117,17 +100,12 @@ try {
                     </div>
 
                     <div class="flex-grow overflow-y-auto">
-                        <!-- <div class="flex flex-col items-center my-8">
-                            <img src="/placeholder.svg?height=100&width=100" alt="Rider Profile" class="rounded-full w-24 h-24 mb-4">
-                            <h2 class="text-xl font-semibold">John Doe</h2>
-                            <p class="text-sm text-gray-500">Rider ID: R12345</p>
-                        </div> -->
-                        
-                        <nav class="space-y-2 px-4">
-                            <a href="index.php" class="block p-3 bg-[#ff6b00] text-white rounded-lg">Dashboard</a>
-                            <a href="rider-pending-deliveries.php" class="block p-3 hover:bg-orange-100 rounded-lg">Pending Deliveries</a>
+                        <nav class="space-y-2 px-4 mt-6">
+                            <a href="index.php" class="block p-3 hover:bg-orange-100 rounded-lg">Dashboard</a>
+                            <a href="rider-pending-deliveries.php" class="block p-3 bg-[#ff6b00] text-white rounded-lg">Pending Deliveries</a>
                             <a href="rider-delivery-history.php" class="block p-3 hover:bg-orange-100 rounded-lg">Delivery History</a>
                             <a href="rider-performance.php" class="block p-3 hover:bg-orange-100 rounded-lg">My Performance</a>
+                            <a href="rider_profile.php" class="block p-3 hover:bg-orange-100 rounded-lg">Profile</a>
                             <a href="rider-settings.php" class="block p-3 hover:bg-orange-100 rounded-lg">Settings</a>
                         </nav>
                     </div>
@@ -141,69 +119,72 @@ try {
             <div class="flex-1 w-full">
                 <h1 class="text-2xl font-bold mb-6">Pending Deliveries</h1>
                 
-                <!-- Delivery Stats -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <div class="bg-white p-4 rounded-lg shadow">
-                        <h3 class="text-lg font-semibold mb-2">Pending Pickups</h3>
-                        <p class="text-2xl font-bold text-[#ff6b00]">3</p>
+                <?php if (empty($pending_deliveries)): ?>
+                <div class="bg-white shadow rounded-lg p-8 text-center">
+                    <div class="text-gray-400 text-5xl mb-4">
+                        <i class="fas fa-box-open"></i>
                     </div>
-                    <div class="bg-white p-4 rounded-lg shadow">
-                        <h3 class="text-lg font-semibold mb-2">En Route</h3>
-                        <p class="text-2xl font-bold text-[#ff6b00]">2</p>
-                    </div>
-                    <div class="bg-white p-4 rounded-lg shadow">
-                        <h3 class="text-lg font-semibold mb-2">Completed Today</h3>
-                        <p class="text-2xl font-bold text-[#ff6b00]">5</p>
-                    </div>
+                    <h2 class="text-xl font-semibold mb-2">No Pending Deliveries</h2>
+                    <p class="text-gray-500">You don't have any pending deliveries at the moment.</p>
                 </div>
-
-                <!-- Delivery List -->
-                <!-- Delivery List -->
-                <div class="flex-1 w-full">
-                <h1 class="text-2xl font-bold mb-6">Pending Deliveries</h1>
-                <div class="bg-white shadow rounded-lg overflow-hidden">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Track ID</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phone</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Location</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            <?php foreach ($orders as $order): ?>
-                            <tr>
-                                <td class="px-6 py-4 text-sm font-medium text-gray-900"><?= htmlspecialchars($order['tracking_id']) ?></td>
-                                <td class="px-6 py-4 text-sm text-gray-500"><?= htmlspecialchars($order['full_name']) ?></td>
-                                <td class="px-6 py-4 text-sm text-gray-500"><?= htmlspecialchars($order['phone']) ?></td>
-                                <td class="px-6 py-4 text-sm text-gray-500"><?= htmlspecialchars("{$order['city']}, {$order['state']}, {$order['country']}") ?></td>
-                                <td class="px-6 py-4">
-                                    <span class="px-2 inline-flex text-xs font-semibold rounded-full <?= $order['status'] === 'Pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800' ?>">
-                                        <?= htmlspecialchars($order['status']) ?>
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 text-sm font-medium">
-    <?php 
-        echo "Order ID: " . $order['id'] . " - Tracking ID: " . $order['tracking_id']; // Debugging
-    ?>
-
-    <?php if ($order['status'] == 'processing'): ?>
-        <button onclick="startDelivery('<?= $order['id'] ?>', '<?= $order['tracking_id'] ?>')" class="text-black hover:text-[#e05e00]">Start</button>
-    <?php elseif ($order['status'] == 'En Route'): ?>
-        <button onclick="cancelRider('<?= $order['rider_id'] ?>', '<?= $order['id'] ?>')" class="text-red-500 hover:text-red-700">Cancel</button>
-    <?php endif; ?>
-</td>
-
-                            </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
+                <?php else: ?>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <?php foreach ($pending_deliveries as $delivery): ?>
+                    <div class="bg-white shadow rounded-lg p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h2 class="text-lg font-semibold">Order #<?php echo htmlspecialchars($delivery['id']); ?></h2>
+                                <p class="text-sm text-gray-500">Tracking ID: <?php echo htmlspecialchars($delivery['tracking_id']); ?></p>
+                            </div>
+                            <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-semibold">
+                                <?php echo ucfirst(htmlspecialchars($delivery['status'])); ?>
+                            </span>
+                        </div>
+                        
+                        <div class="space-y-3 mb-4">
+                            <div>
+                                <p class="text-sm text-gray-500">Customer</p>
+                                <p class="font-medium"><?php echo htmlspecialchars($delivery['customer_name']); ?></p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Delivery Address</p>
+                                <p class="font-medium"><?php echo htmlspecialchars($delivery['customer_address']); ?></p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Phone</p>
+                                <p class="font-medium"><?php echo htmlspecialchars($delivery['customer_phone']); ?></p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Order Details</p>
+                                <p class="font-medium">
+                                    <?php echo htmlspecialchars($delivery['amount_kg']); ?> x <?php echo htmlspecialchars($delivery['cylinder_type']); ?> 
+                                    (<?php echo htmlspecialchars($delivery['exchange']); ?>)
+                                </p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Total Amount</p>
+                                <p class="font-medium text-lg">
+                                    <?php echo htmlspecialchars($delivery['currency']); ?> <?php echo number_format($delivery['total_price'], 2); ?>
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex gap-2">
+                            <a href="tel:<?php echo htmlspecialchars($delivery['customer_phone']); ?>" class="flex-1 px-4 py-2 bg-gray-100 text-gray-800 rounded-md hover:bg-gray-200 text-center">
+                                <i class="fas fa-phone mr-2"></i> Call Customer
+                            </a>
+                            <form action="update_delivery.php" method="post" class="flex-1">
+                                <input type="hidden" name="order_id" value="<?php echo $delivery['id']; ?>">
+                                <input type="hidden" name="action" value="complete">
+                                <button type="submit" class="w-full px-4 py-2 bg-[#ff6b00] text-white rounded-md hover:bg-[#e05e00]">
+                                    <i class="fas fa-check mr-2"></i> Mark as Delivered
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
                 </div>
-            </div>
-       
+                <?php endif; ?>
             </div>
         </div>
     </main>
@@ -243,7 +224,6 @@ try {
                 sidebar.classList.add('-translate-x-full');
             }
         });
-
     </script>
 </body>
 </html>
