@@ -139,14 +139,14 @@ $userRole = $_SESSION['role'] ?? null; // Get user role if logged in
                     Order gas, track deliveries, and manage your account with our user-friendly customer app.
                 </p>
                 <div class="space-y-3">
-                    <a href="https://apps.apple.com" class="flex items-center justify-center bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors w-full">
+                    <a href="https://mega.nz/file/bHABCR5I#GAS-HJn9WAXI_AfU6bxYL4ATJSHV2d3DgRvN2fDisfM" class="flex items-center justify-center bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors w-full">
                         <i class="fab fa-apple text-2xl mr-2"></i>
                         <div class="text-left">
                             <p class="text-xs">Download on the</p>
                             <p class="text-sm font-semibold">App Store</p>
                         </div>
                     </a>
-                    <a href="https://play.google.com" class="flex items-center justify-center bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors w-full">
+                    <a href="https://mega.nz/file/bHABCR5I#GAS-HJn9WAXI_AfU6bxYL4ATJSHV2d3DgRvN2fDisfM" class="flex items-center justify-center bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors w-full">
                         <i class="fab fa-google-play text-2xl mr-2"></i>
                         <div class="text-left">
                             <p class="text-xs">GET IT ON</p>
