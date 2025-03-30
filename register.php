@@ -6,16 +6,50 @@
     <title>Registration</title>
     <script>
     const states = {
-        nigeria: [
-            { name: "Lagos", cities: ["Ikeja", "Surulere", "Lekki"] },
-            { name: "Abuja", cities: ["Gwarimpa", "Maitama", "Asokoro"] },
-            { name: "Rivers", cities: ["Port Harcourt", "Obio Akpor", "Eleme"] }
-        ],
-        ghana: [
-            { name: "Greater Accra", cities: ["Accra", "Tema", "Madina"] },
-            { name: "Ashanti", cities: ["Kumasi", "Obuasi", "Ejisu"] },
-            { name: "Northern", cities: ["Tamale", "Yendi", "Savelugu"] }
-        ]
+
+    nigeria: [
+        { name: "Abia", cities: ["Umuahia", "Aba", "Ohafia", "Arochukwu", "Bende", "Isiala Ngwa", "Ukwa", "Osisioma", "Ikwuano", "Ugwunagbo"] },
+        { name: "Adamawa", cities: ["Yola", "Mubi", "Numan", "Jimeta", "Ganye", "Girei", "Hong", "Lamurde", "Michika", "Toungo"] },
+        { name: "Akwa Ibom", cities: ["Uyo", "Eket", "Ikot Ekpene", "Oron", "Abak", "Etinan", "Itu", "Ibesikpo Asutan", "Nsit Ibom", "Nsit Atai"] },
+        { name: "Anambra", cities: ["Awka", "Onitsha", "Nnewi", "Ekwulobia", "Otuocha", "Ihiala", "Umunze", "Nkpor", "Aguleri", "Obosi"] },
+        { name: "Bauchi", cities: ["Bauchi", "Azare", "Misau", "Jama'are", "Itas Gadau", "Darazo", "Bogoro", "Ningi", "Katagum", "Gamawa"] },
+        { name: "Bayelsa", cities: ["Yenagoa", "Brass", "Ogbia", "Nembe", "Ekeremor", "Sagbama", "Kolokuma", "Southern Ijaw", "Kaiama", "Agbere"] },
+        { name: "Benue", cities: ["Makurdi", "Gboko", "Otukpo", "Katsina-Ala", "Adikpo", "Aliade", "Vandeikya", "Naka", "Okpoga", "Oturkpo"] },
+        { name: "Borno", cities: ["Maiduguri", "Biu", "Bama", "Gwoza", "Dikwa", "Monguno", "Ngala", "Askira Uba", "Kaga", "Shani"] },
+        { name: "Cross River", cities: ["Calabar", "Ugep", "Ikom", "Ogoja", "Obudu", "Akamkpa", "Bekwarra", "Biase", "Yakuur", "Etung"] },
+        { name: "Delta", cities: ["Warri", "Asaba", "Sapele", "Agbor", "Ughelli", "Ogwashi-Uku", "Oleh", "Kwale", "Burutu", "Koko"] },
+        { name: "Ebonyi", cities: ["Abakaliki", "Afikpo", "Onueke", "Ezzamgbo", "Nkalagu", "Ikwo", "Ishiagu", "Izzi", "Amasiri", "Uburu"] },
+        { name: "Edo", cities: ["Benin City", "Auchi", "Ekpoma", "Uromi", "Irrua", "Ogbona", "Sabongida-Ora", "Fugar", "Ubiaja", "Abudu"] },
+        { name: "Ekiti", cities: ["Ado Ekiti", "Ikere Ekiti", "Omuo Ekiti", "Iyin Ekiti", "Efon Alaaye", "Iworoko Ekiti", "Ikole Ekiti", "Ode Ekiti", "Ifaki Ekiti", "Aramoko Ekiti"] },
+        { name: "Enugu", cities: ["Enugu", "Nsukka", "Awgu", "Oji River", "Udi", "Agbani", "Obollo-Afor", "Emene", "Ezeagu", "Nike"] },
+        { name: "Gombe", cities: ["Gombe", "Dukku", "Billiri", "Kaltungo", "Bajoga", "Funakaye", "Kumo", "Deba", "Nafada", "Tula"] },
+        { name: "Imo", cities: ["Owerri", "Orlu", "Okigwe", "Mbaise", "Oguta", "Isiala Mbano", "Nkwerre", "Ehime Mbano", "Ideato", "Obowo"] },
+        { name: "Jigawa", cities: ["Dutse", "Hadejia", "Gumel", "Birnin Kudu", "Kazaure", "Ringim", "Babura", "Gwaram", "Garki", "Malam Madori"] },
+        { name: "Kaduna", cities: ["Kaduna", "Zaria", "Kafanchan", "Soba", "Makarfi", "Kagoro", "Ikara", "Kujama", "Jema'a", "Giwa"] },
+        { name: "Kano", cities: ["Kano", "Wudil", "Dala", "Gwale", "Fagge", "Tarauni", "Dambatta", "Kumbotso", "Ungogo", "Gwarzo"] },
+        { name: "Katsina", cities: ["Katsina", "Daura", "Funtua", "Malumfashi", "Bakori", "Dutsin-Ma", "Kankara", "Charanchi", "Kusada", "Safana"] },
+        { name: "Kebbi", cities: ["Birnin Kebbi", "Argungu", "Yauri", "Zuru", "Bunza", "Jega", "Bagudo", "Kamba", "Kalgo", "Maiyama"] },
+        { name: "Kogi", cities: ["Lokoja", "Idah", "Kabba", "Okene", "Ajaokuta", "Ankpa", "Egbe", "Iyara", "Ogaminana", "Dekina"] },
+        { name: "Lagos", cities: ["Ikeja", "Surulere", "Lekki", "Yaba", "Victoria Island", "Ikorodu", "Epe", "Badagry", "Ojo", "Apapa"] },
+        { name: "Ogun", cities: ["Abeokuta", "Ijebu Ode", "Sango Ota", "Ilaro", "Sagamu", "Owode", "Imeko", "Ifo", "Agbara", "Odeda"] },
+        { name: "Ondo", cities: ["Akure", "Ondo", "Owo", "Ikare", "Okitipupa", "Idanre", "Igbokoda", "Irele", "Odigbo", "Ese Odo"] },
+        { name: "Osun", cities: ["Osogbo", "Ilesa", "Iwo", "Ede", "Iragbiji", "Ejigbo", "Ila Orangun", "Modakeke", "Ikirun", "Otan Ayegbaju"] },
+        { name: "Oyo", cities: ["Ibadan", "Oyo", "Ogbomoso", "Iseyin", "Saki", "Eruwa", "Igboho", "Kishi", "Fiditi", "Lanlate"] },
+    ],
+
+
+    ghana: [
+        { name: "Greater Accra", cities: ["Accra", "Tema", "Madina", "Adenta", "Dansoman", "Nungua", "Teshie", "Ablekuma", "Ashaiman", "Spintex"] },
+        { name: "Ashanti", cities: ["Kumasi", "Obuasi", "Ejisu", "Konongo", "Mampong", "Bekwai", "Offinso", "Nkawie", "Agona", "Asante Mampong"] },
+        { name: "Northern", cities: ["Tamale", "Yendi", "Bimbilla", "Savelugu", "Gushegu", "Wulensi", "Saboba", "Karaga", "Kpandai", "Bole"] },
+        { name: "Western", cities: ["Sekondi-Takoradi", "Axim", "Tarkwa", "Prestea", "Shama", "Agona Nkwanta", "Elubo", "Daboase", "Half Assini", "Beyin"] },
+        { name: "Eastern", cities: ["Koforidua", "Nkawkaw", "Suhum", "Mpraeso", "Begoro", "Akim Oda", "Nsawam", "Aburi", "Kwahu Tafo", "Donkorkrom"] },
+        { name: "Central", cities: ["Cape Coast", "Winneba", "Swedru", "Kasoa", "Elmina", "Mankessim", "Saltpond", "Twifo Praso", "Assin Fosu", "Apam"] },
+        { name: "Volta", cities: ["Ho", "Aflao", "Keta", "Hohoe", "Denu", "Jasikan", "Akatsi", "Kpando", "Peki", "Anloga"] },
+        { name: "Bono", cities: ["Sunyani", "Berekum", "Dormaa Ahenkro", "Wamfie", "Jinijini", "Drobo", "Seikwa", "Chiraa", "Sampa", "Nkrankwanta"] },
+        { name: "Upper East", cities: ["Bolgatanga", "Navrongo", "Bawku", "Zebilla", "Sandema", "Tongo", "Paga", "Chuchuliga", "Binduri", "Bongo"] },
+        { name: "Upper West", cities: ["Wa", "Tumu", "Jirapa", "Lawra", "Nandom", "Hamile", "Lassia-Tuolu", "Funsi", "Wechiau", "Gwollu"] }
+    ]
     };
 
     const currencies = {

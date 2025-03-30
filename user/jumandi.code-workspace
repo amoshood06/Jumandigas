@@ -1,0 +1,31 @@
+{
+  "folders": [
+	{
+		"path": ".."
+	},
+	{
+		"path": "../../9ratowiatlist"
+	},
+	{
+		"path": "../../9ratos"
+	},
+	{
+		"path": "../../myapps"
+	},
+	{
+		"path": "../../../../Users/USER/Documents/app"
+	},
+	{
+		"path": "../../learn"
+	},
+	{
+		"path": "../../api"
+	},
+	{
+		"path": "../../../../Users/USER/Documents/newone"
+	}
+],
+  "settings": {
+    "liveServer.settings.multiRootWorkspaceName": "my template"
+  }
+}
