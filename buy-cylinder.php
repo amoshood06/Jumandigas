@@ -2,13 +2,13 @@
 session_start();
 $userRole = $_SESSION['role'] ?? null; // Get user role if logged in
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JumandiGas - Download Our Apps</title>
+    <title>Buy Cylinder - JumandiGas</title>
+    <link rel="shortcut icon" href="./asset/image/logo.png" type="image/x-icon">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script>
@@ -30,24 +30,22 @@ $userRole = $_SESSION['role'] ?? null; // Get user role if logged in
         .mobile-menu.active {
             transform: translateX(0);
         }
-        .app-card {
+        .cylinder-card {
             transition: all 0.3s ease;
         }
-        .app-card:hover {
+        .cylinder-card:hover {
             transform: translateY(-5px);
         }
     </style>
 </head>
-<body class="bg-orange-50 min-h-screen flex flex-col">
+<body class="bg-orange-50 pt-16">
     <!-- Fixed Header -->
-    <header class="bg-orange-50 border-b sticky top-0 z-50">
+    <header class="fixed top-0 left-0 right-0 bg-orange-50 border-b z-50">
         <div class="container mx-auto px-4">
             <div class="flex items-center justify-between h-16">
                 <!-- Logo -->
-                <a href="/" class="flex-shrink-0">
-                    <div class="h-8 w-32 bg-primary rounded-md flex items-center justify-center text-white font-bold">
-                        JumandiGas
-                    </div>
+                <a href="#" class="flex-shrink-0">
+                    <img src="./asset/image/logo.png" alt="JumandiGas" class="h-8">
                 </a>
 
                 <!-- Desktop Navigation -->
@@ -91,169 +89,112 @@ $userRole = $_SESSION['role'] ?? null; // Get user role if logged in
             <div class="flex flex-col space-y-4">
             <a href="index.php" class="text-black hover:text-primary">Home</a>
                     <a href="./user/order-page.php" class="text-black hover:text-primary">Order Gas</a>
-                    <a href="buy-cylinder.php" class="text-black hover:text-primary">Buy Cylinder</a>
-                        <?php if (!$userRole): ?>
-                            <a href="register.php" class="text-black hover:text-primary">Register</a>
-                            <a href="login.php" class="bg-primary text-white px-8 py-2 rounded-full hover:bg-orange-700">Login</a>
-                        <?php else: ?>
-                        <!-- Show Dashboard when user is logged in -->
-                        <?php 
-                            $dashboardUrl = '#';
-                            if ($userRole == 'vendor') {
-                                $dashboardUrl = './vendor/index.php';
-                            } elseif ($userRole == 'user') {
-                                $dashboardUrl = './user/index.php';
-                            } elseif ($userRole == 'rider') {
-                                $dashboardUrl = './rider/index.php';
-                            }
-                        ?>
-                        <a href="<?= $dashboardUrl ?>" class="bg-primary text-white px-8 py-2 rounded-full hover:bg-orange-700">Dashboard</a>
-                    <?php endif; ?>
+                    <a href="#" class="text-black hover:text-primary">Buy Cylinder</a>
+                    <?php if (!$userRole): ?>
+                    <a href="register.php" class="text-black hover:text-primary">Register</a>
+                    <a href="login.php" class="bg-primary text-white px-6 py-2 rounded-full text-center hover:bg-orange-700">Login</a>
+                    <?php else: ?>
+                    <!-- Show Dashboard when user is logged in -->
+                    <?php 
+                        $dashboardUrl = '#';
+                        if ($userRole == 'vendor') {
+                            $dashboardUrl = './vendor/index.php';
+                        } elseif ($userRole == 'user') {
+                            $dashboardUrl = './user/index.php';
+                        } elseif ($userRole == 'rider') {
+                            $dashboardUrl = './rider/index.php';
+                        }
+                    ?>
+                    <a href="<?= $dashboardUrl ?>" class="bg-primary text-white px-6 py-2 rounded-full text-center hover:bg-orange-700">Dashboard</a>
+                <?php endif; ?>
             </div>
         </div>
     </div>
 
     <!-- Main Content -->
-    <main class="flex-grow container mx-auto px-4 py-12">
-        <!-- App Links Header -->
+    <main class="container mx-auto px-4 py-12">
+        <!-- Buy Cylinder Header -->
         <div class="text-center mb-16">
             <div class="inline-block bg-orange-100/80 px-4 py-2 rounded-full mb-4">
-                <span class="text-primary font-medium">Our Mobile Apps</span>
+                <span class="text-primary font-medium">Buy Cylinder</span>
             </div>
-            <h1 class="text-4xl md:text-5xl font-bold mb-4">Choose Your App</h1>
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">Choose Your Perfect Cylinder</h1>
             <p class="text-gray-600 max-w-2xl mx-auto">
-                Download the JumandiGas app that fits your needs. Whether you're a customer, vendor, or delivery rider,
-                we have a specialized app for you.
+                Explore our range of high-quality, safe, and durable gas cylinders. Find the perfect size for your home or business needs.
             </p>
         </div>
 
-        <!-- App Cards -->
-        <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            <!-- User App -->
-            <div class="app-card bg-white p-8 rounded-2xl shadow-lg">
-                <div class="h-16 w-16 bg-orange-100 rounded-full flex items-center justify-center mb-6 mx-auto">
-                    <i class="fas fa-users text-primary text-2xl"></i>
-                </div>
-                <h3 class="text-xl font-semibold mb-4 text-center">User App</h3>
-                <p class="text-gray-600 mb-6 text-center">
-                    Order gas, track deliveries, and manage your account with our user-friendly customer app.
-                </p>
-                <div class="space-y-3">
-                    <a href="https://apps.apple.com" class="flex items-center justify-center bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors w-full">
-                        <i class="fab fa-apple text-2xl mr-2"></i>
-                        <div class="text-left">
-                            <p class="text-xs">Download on the</p>
-                            <p class="text-sm font-semibold">App Store</p>
-                        </div>
-                    </a>
-                    <a href="https://play.google.com" class="flex items-center justify-center bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors w-full">
-                        <i class="fab fa-google-play text-2xl mr-2"></i>
-                        <div class="text-left">
-                            <p class="text-xs">GET IT ON</p>
-                            <p class="text-sm font-semibold">Google Play</p>
-                        </div>
-                    </a>
-                </div>
+        <!-- Cylinders Grid -->
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Cylinder Card 1 -->
+            <div class="cylinder-card bg-white p-6 rounded-2xl shadow-lg">
+                <img src="./asset/image/3kg-removebg-preview.png?height=200&width=200" alt="3kg Gas Cylinder" class="w-full h-48 object-contain mb-4">
+                <h3 class="text-xl font-semibold mb-2">3kg Gas Cylinder</h3>
+                <ul class="text-gray-600 mb-4">
+                    <li><i class="fas fa-check text-primary mr-2"></i> Ideal for small households</li>
+                    <li><i class="fas fa-check text-primary mr-2"></i> Portable and lightweight</li>
+                    <li><i class="fas fa-check text-primary mr-2"></i> Perfect for camping trips</li>
+                </ul>
+                <a href="#" class="block text-center bg-primary text-white py-2 rounded-full hover:bg-orange-700 transition duration-300">
+                    Inquire Now
+                </a>
             </div>
 
-            <!-- Vendor App -->
-            <div class="app-card bg-white p-8 rounded-2xl shadow-lg">
-                <div class="h-16 w-16 bg-orange-100 rounded-full flex items-center justify-center mb-6 mx-auto">
-                    <i class="fas fa-store text-primary text-2xl"></i>
-                </div>
-                <h3 class="text-xl font-semibold mb-4 text-center">Vendor App</h3>
-                <p class="text-gray-600 mb-6 text-center">
-                    Manage inventory, process orders, and track sales with our comprehensive vendor dashboard.
-                </p>
-                <div class="space-y-3">
-                    <a href="https://apps.apple.com" class="flex items-center justify-center bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors w-full">
-                        <i class="fab fa-apple text-2xl mr-2"></i>
-                        <div class="text-left">
-                            <p class="text-xs">Download on the</p>
-                            <p class="text-sm font-semibold">App Store</p>
-                        </div>
-                    </a>
-                    <a href="https://play.google.com" class="flex items-center justify-center bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors w-full">
-                        <i class="fab fa-google-play text-2xl mr-2"></i>
-                        <div class="text-left">
-                            <p class="text-xs">GET IT ON</p>
-                            <p class="text-sm font-semibold">Google Play</p>
-                        </div>
-                    </a>
-                </div>
+            <!-- Cylinder Card 2 -->
+            <div class="cylinder-card bg-white p-6 rounded-2xl shadow-lg">
+                <img src="./asset/image/6kg-removebg-preview.png?height=200&width=200" alt="6kg Gas Cylinder" class="w-full h-48 object-contain mb-4">
+                <h3 class="text-xl font-semibold mb-2">6kg Gas Cylinder</h3>
+                <ul class="text-gray-600 mb-4">
+                    <li><i class="fas fa-check text-primary mr-2"></i> Suitable for medium-sized families</li>
+                    <li><i class="fas fa-check text-primary mr-2"></i> Balanced size and capacity</li>
+                    <li><i class="fas fa-check text-primary mr-2"></i> Easy to handle and store</li>
+                </ul>
+                <a href="#" class="block text-center bg-primary text-white py-2 rounded-full hover:bg-orange-700 transition duration-300">
+                    Inquire Now
+                </a>
             </div>
 
-            <!-- Rider App -->
-            <div class="app-card bg-white p-8 rounded-2xl shadow-lg">
-                <div class="h-16 w-16 bg-orange-100 rounded-full flex items-center justify-center mb-6 mx-auto">
-                    <i class="fas fa-motorcycle text-primary text-2xl"></i>
-                </div>
-                <h3 class="text-xl font-semibold mb-4 text-center">Rider App</h3>
-                <p class="text-gray-600 mb-6 text-center">
-                    Accept deliveries, navigate routes, and manage your earnings with our rider-focused app.
-                </p>
-                <div class="space-y-3">
-                    <a href="https://apps.apple.com" class="flex items-center justify-center bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors w-full">
-                        <i class="fab fa-apple text-2xl mr-2"></i>
-                        <div class="text-left">
-                            <p class="text-xs">Download on the</p>
-                            <p class="text-sm font-semibold">App Store</p>
-                        </div>
-                    </a>
-                    <a href="https://play.google.com" class="flex items-center justify-center bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors w-full">
-                        <i class="fab fa-google-play text-2xl mr-2"></i>
-                        <div class="text-left">
-                            <p class="text-xs">GET IT ON</p>
-                            <p class="text-sm font-semibold">Google Play</p>
-                        </div>
-                    </a>
-                </div>
+            <!-- Cylinder Card 3 -->
+            <div class="cylinder-card bg-white p-6 rounded-2xl shadow-lg">
+                <img src="./asset/image/12.5kg-removebg-preview.png?height=200&width=200" alt="12.5kg Gas Cylinder" class="w-full h-48 object-contain mb-4">
+                <h3 class="text-xl font-semibold mb-2">12.5kg Gas Cylinder</h3>
+                <ul class="text-gray-600 mb-4">
+                    <li><i class="fas fa-check text-primary mr-2"></i> Perfect for large families</li>
+                    <li><i class="fas fa-check text-primary mr-2"></i> Ideal for frequent cooking</li>
+                    <li><i class="fas fa-check text-primary mr-2"></i> Long-lasting supply</li>
+                </ul>
+                <a href="#" class="block text-center bg-primary text-white py-2 rounded-full hover:bg-orange-700 transition duration-300">
+                    Inquire Now
+                </a>
             </div>
         </div>
 
-        <!-- Features Section -->
-        <div class="mt-24">
-            <h2 class="text-3xl font-bold mb-12 text-center">App Features</h2>
-            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <!-- Why Choose Our Cylinders -->
+        <div class="mt-20">
+            <h2 class="text-3xl font-bold mb-8 text-center">Why Choose Our Cylinders?</h2>
+            <div class="grid md:grid-cols-3 gap-8">
                 <div class="text-center">
-                    <div class="h-12 w-12 bg-orange-100 rounded-full flex items-center justify-center mb-4 mx-auto">
-                        <i class="fas fa-download text-primary"></i>
-                    </div>
-                    <h3 class="text-xl font-semibold mb-2">Easy Installation</h3>
-                    <p class="text-gray-600">Download and set up in minutes with our simple onboarding process.</p>
+                    <i class="fas fa-shield-alt text-4xl text-primary mb-4"></i>
+                    <h3 class="text-xl font-semibold mb-2">Safety First</h3>
+                    <p class="text-gray-600">All our cylinders meet the highest safety standards and undergo regular inspections.</p>
                 </div>
                 <div class="text-center">
-                    <div class="h-12 w-12 bg-orange-100 rounded-full flex items-center justify-center mb-4 mx-auto">
-                        <i class="fas fa-lock text-primary"></i>
-                    </div>
-                    <h3 class="text-xl font-semibold mb-2">Secure Transactions</h3>
-                    <p class="text-gray-600">All payments and personal data are protected with industry-standard encryption.</p>
+                    <i class="fas fa-medal text-4xl text-primary mb-4"></i>
+                    <h3 class="text-xl font-semibold mb-2">Premium Quality</h3>
+                    <p class="text-gray-600">Made from high-grade materials to ensure durability and long-lasting performance.</p>
                 </div>
                 <div class="text-center">
-                    <div class="h-12 w-12 bg-orange-100 rounded-full flex items-center justify-center mb-4 mx-auto">
-                        <i class="fas fa-bolt text-primary"></i>
-                    </div>
-                    <h3 class="text-xl font-semibold mb-2">Real-time Updates</h3>
-                    <p class="text-gray-600">Get instant notifications about your orders, deliveries, and account activity.</p>
-                </div>
-                <div class="text-center">
-                    <div class="h-12 w-12 bg-orange-100 rounded-full flex items-center justify-center mb-4 mx-auto">
-                        <i class="fas fa-headset text-primary"></i>
-                    </div>
-                    <h3 class="text-xl font-semibold mb-2">24/7 Support</h3>
-                    <p class="text-gray-600">Our customer service team is always available to help with any issues.</p>
+                    <i class="fas fa-sync-alt text-4xl text-primary mb-4"></i>
+                    <h3 class="text-xl font-semibold mb-2">Easy Refills</h3>
+                    <p class="text-gray-600">Convenient refill service available through our gas delivery system.</p>
                 </div>
             </div>
         </div>
 
         <!-- Call to Action -->
-        <div class="bg-orange-100 rounded-2xl p-8 md:p-12 mt-24 text-center">
-            <h2 class="text-2xl md:text-3xl font-bold mb-4">Ready to get started?</h2>
-            <p class="text-gray-600 mb-8 max-w-2xl mx-auto">
-                Download the JumandiGas app today and experience the convenience of gas delivery at your fingertips.
-            </p>
-            <a href="#" class="bg-primary text-white px-8 py-3 rounded-full hover:bg-orange-600 transition-colors inline-block text-lg font-semibold">
-                Download Now
+        <div class="text-center mt-16">
+            <a href="#" class="bg-primary text-white px-8 py-3 rounded-full hover:bg-orange-700 inline-block text-lg font-semibold">
+                Contact Us for Bulk Orders
             </a>
         </div>
     </main>
@@ -264,12 +205,7 @@ $userRole = $_SESSION['role'] ?? null; // Get user role if logged in
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                 <!-- Logo Column -->
                 <div>
-                    <div class="h-12 w-32 bg-white rounded-md flex items-center justify-center text-primary font-bold mb-4">
-                        JumandiGas
-                    </div>
-                    <p class="text-sm">
-                        Your trusted partner for reliable gas delivery services.
-                    </p>
+                    <img src="./asset/image/logo.png" alt="JumandiGas" class="h-12 mb-4">
                 </div>
 
                 <!-- Company Column -->
@@ -297,7 +233,7 @@ $userRole = $_SESSION['role'] ?? null; // Get user role if logged in
                     <h3 class="font-semibold mb-4">App</h3>
                     <div class="space-y-4">
                         <a href="#" class="inline-block">
-                            <button class="bg-black text-white px-6 py-2 rounded-lg flex items-center hover:bg-gray-800 transition-colors">
+                            <button class="bg-black text-white px-6 py-2 rounded-lg flex items-center hover:bg-gray-800 transition duration-300">
                                 <i class="fab fa-apple text-2xl mr-2"></i>
                                 <div class="text-left">
                                     <p class="text-xs">Download on the</p>
@@ -306,7 +242,7 @@ $userRole = $_SESSION['role'] ?? null; // Get user role if logged in
                             </button>
                         </a>
                         <a href="#" class="inline-block">
-                            <button class="bg-black text-white px-6 py-2 rounded-lg flex items-center hover:bg-gray-800 transition-colors">
+                            <button class="bg-black text-white px-6 py-2 rounded-lg flex items-center hover:bg-gray-800 transition duration-300">
                                 <i class="fab fa-google-play text-2xl mr-2"></i>
                                 <div class="text-left">
                                     <p class="text-xs">GET IT ON</p>
@@ -329,34 +265,19 @@ $userRole = $_SESSION['role'] ?? null; // Get user role if logged in
         const mobileMenu = document.querySelector('.mobile-menu');
         const mobileMenuButton = document.getElementById('mobile-menu-button');
         const closeMenuButton = document.getElementById('close-menu-button');
-        const overlay = document.createElement('div');
-        
-        overlay.classList.add('fixed', 'inset-0', 'bg-black', 'opacity-0', 'pointer-events-none', 'z-40');
-        overlay.style.transition = 'opacity 0.3s ease-in-out';
-        document.body.appendChild(overlay);
 
-        function openMobileMenu() {
+        mobileMenuButton.addEventListener('click', () => {
             mobileMenu.classList.add('active');
-            overlay.classList.add('opacity-50');
-            overlay.classList.remove('pointer-events-none');
-            document.body.style.overflow = 'hidden';
-        }
+        });
 
-        function closeMobileMenu() {
+        closeMenuButton.addEventListener('click', () => {
             mobileMenu.classList.remove('active');
-            overlay.classList.remove('opacity-50');
-            overlay.classList.add('pointer-events-none');
-            document.body.style.overflow = '';
-        }
+        });
 
-        mobileMenuButton.addEventListener('click', openMobileMenu);
-        closeMenuButton.addEventListener('click', closeMobileMenu);
-        overlay.addEventListener('click', closeMobileMenu);
-
-        // Close menu when window is resized to desktop size
-        window.addEventListener('resize', () => {
-            if (window.innerWidth >= 768) { // md breakpoint
-                closeMobileMenu();
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!mobileMenu.contains(e.target) && !mobileMenuButton.contains(e.target)) {
+                mobileMenu.classList.remove('active');
             }
         });
     </script>
