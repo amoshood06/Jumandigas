@@ -3,7 +3,7 @@ require_once "../auth_check.php";
 // Check if user is logged in and is a vendor
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'vendor') {
     // Redirect to login page if not logged in or not a vendor
-    header("Location: login.php");
+    header("Location: ../login.php");
     exit();
 }
 
