@@ -48,6 +48,7 @@ $userRole = $_SESSION['role'] ?? null; // Get user role if logged in
                     <a href="index.php" class="text-black hover:text-primary">Home</a>
                     <a href="./user/order-page.php" class="text-black hover:text-primary">Order Gas</a>
                     <a href="buy-cylinder.php" class="text-black hover:text-primary">Buy Cylinder</a>
+                    <a href="app.php" class="text-black hover:text-primary">Download App</a>
                         <?php if (!$userRole): ?>
                             <a href="register.php" class="text-black hover:text-primary">Register</a>
                             <a href="login.php" class="bg-primary text-white px-8 py-2 rounded-full hover:bg-orange-700">Login</a>
@@ -83,7 +84,8 @@ $userRole = $_SESSION['role'] ?? null; // Get user role if logged in
                 <div class="flex flex-col space-y-4">
                     <a href="index.php" class="text-black hover:text-primary">Home</a>
                     <a href="./user/order-page.php" class="text-black hover:text-primary">Order Gas</a>
-                    <a href="#" class="text-black hover:text-primary">Buy Cylinder</a>
+                    <a href="buy-cylinder.php" class="text-black hover:text-primary">Buy Cylinder</a>
+                    <a href="app.php" class="text-black hover:text-primary">Download apk</a>
                     <?php if (!$userRole): ?>
                     <a href="register.php" class="text-black hover:text-primary">Register</a>
                     <a href="login.php" class="bg-primary text-white px-6 py-2 rounded-full text-center hover:bg-orange-700">Login</a>
@@ -190,7 +192,7 @@ $userRole = $_SESSION['role'] ?? null; // Get user role if logged in
                 <div>
                     <h3 class="font-semibold mb-4">App</h3>
                     <div class="space-y-4">
-                        <a href="#" class="inline-block">
+                        <a href="app.php" class="inline-block">
                             <button class="bg-black text-white px-6 py-2 rounded-lg flex items-center hover:bg-gray-800 transition duration-300">
                                 <i class="fab fa-apple text-2xl mr-2"></i>
                                 <div class="text-left">
@@ -199,7 +201,7 @@ $userRole = $_SESSION['role'] ?? null; // Get user role if logged in
                                 </div>
                             </button>
                         </a>
-                        <a href="#" class="inline-block">
+                        <a href="app.php" class="inline-block">
                             <button class="bg-black text-white px-6 py-2 rounded-lg flex items-center hover:bg-gray-800 transition duration-300">
                                 <i class="fab fa-google-play text-2xl mr-2"></i>
                                 <div class="text-left">
