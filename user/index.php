@@ -117,7 +117,7 @@ $orders = $stmt->fetchAll();
     <a href="index.php" class="block p-3 bg-[#ff6b00] text-white rounded-lg">Home</a>
     <a href="user-deposit.php" class="block p-3 hover:bg-orange-100 rounded-lg">Deposit</a>
     <a href="item-tracking.php" class="block p-3 hover:bg-orange-100 rounded-lg">Track</a>
-    <a href="#" class="block p-3 hover:bg-orange-100 rounded-lg">Buy Cylinder</a>
+    <a href="./buy-cylinder.php" class="block p-3 hover:bg-orange-100 rounded-lg">Buy Cylinder</a>
     
     <!-- Order Gas Dropdown -->
     <div class="relative group">
@@ -161,7 +161,7 @@ $orders = $stmt->fetchAll();
             <!-- Dashboard Content -->
             <div class="flex-1">
                 <!-- Action Cards - visible on all devices -->
-                <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
+                <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4 mb-6">
                     <div class="bg-[#ff6b00] p-4 rounded-lg text-white text-center">
                         <div class="mb-2">⬇️</div>
                         <div class="text-sm">Deposit</div>

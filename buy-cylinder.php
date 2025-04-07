@@ -36,6 +36,69 @@ $userRole = $_SESSION['role'] ?? null; // Get user role if logged in
         .cylinder-card:hover {
             transform: translateY(-5px);
         }
+        
+        /* WhatsApp Floating Button Styles */
+        .whatsapp-float {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 100;
+        }
+        
+        .whatsapp-button {
+            width: 60px;
+            height: 60px;
+            background-color: #25D366;
+            border-radius: 50%;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 30px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .whatsapp-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.4);
+        }
+        
+        /* Bouncing Animation */
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-20px);
+            }
+            60% {
+                transform: translateY(-10px);
+            }
+        }
+        
+        .bounce {
+            animation: bounce 2s infinite;
+        }
+        
+        /* Pulse Animation for additional attention */
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 15px rgba(37, 211, 102, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(37, 211, 102, 0);
+            }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
     </style>
 </head>
 <body class="bg-orange-50 pt-16">
@@ -50,15 +113,15 @@ $userRole = $_SESSION['role'] ?? null; // Get user role if logged in
 
                 <!-- Desktop Navigation -->
                 <nav class="hidden md:flex items-center space-x-8">
-                <a href="index.php" class="text-black hover:text-primary">Home</a>
+                    <a href="index.php" class="text-black hover:text-primary">Home</a>
                     <a href="./user/order-page.php" class="text-black hover:text-primary">Order Gas</a>
                     <a href="buy-cylinder.php" class="text-black hover:text-primary">Buy Cylinder</a>
-                        <?php if (!$userRole): ?>
+                    <?php if (!$userRole): ?>
                             <a href="register.php" class="text-black hover:text-primary">Register</a>
                             <a href="login.php" class="bg-primary text-white px-8 py-2 rounded-full hover:bg-orange-700">Login</a>
                         <?php else: ?>
-                        <!-- Show Dashboard when user is logged in -->
-                        <?php 
+                     <!-- Show Dashboard when user is logged in -->
+                     <?php 
                             $dashboardUrl = '#';
                             if ($userRole == 'vendor') {
                                 $dashboardUrl = './vendor/index.php';
@@ -87,10 +150,10 @@ $userRole = $_SESSION['role'] ?? null; // Get user role if logged in
                 <i class="fas fa-times text-2xl"></i>
             </button>
             <div class="flex flex-col space-y-4">
-            <a href="index.php" class="text-black hover:text-primary">Home</a>
-                    <a href="./user/order-page.php" class="text-black hover:text-primary">Order Gas</a>
-                    <a href="#" class="text-black hover:text-primary">Buy Cylinder</a>
-                    <?php if (!$userRole): ?>
+                <a href="index.php" class="text-black hover:text-primary">Home</a>
+                <a href="./user/order-page.php" class="text-black hover:text-primary">Order Gas</a>
+                <a href="buy-cylinder.php" class="text-black hover:text-primary">Buy Cylinder</a>
+                <?php if (!$userRole): ?>
                     <a href="register.php" class="text-black hover:text-primary">Register</a>
                     <a href="login.php" class="bg-primary text-white px-6 py-2 rounded-full text-center hover:bg-orange-700">Login</a>
                     <?php else: ?>
@@ -128,44 +191,44 @@ $userRole = $_SESSION['role'] ?? null; // Get user role if logged in
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             <!-- Cylinder Card 1 -->
             <div class="cylinder-card bg-white p-6 rounded-2xl shadow-lg">
-                <img src="./asset/image/3kg-removebg-preview.png?height=200&width=200" alt="3kg Gas Cylinder" class="w-full h-48 object-contain mb-4">
+                <img src="./asset/image/3kg-removebg-preview.png" alt="3kg Gas Cylinder" class="w-full h-48 object-contain mb-4">
                 <h3 class="text-xl font-semibold mb-2">3kg Gas Cylinder</h3>
                 <ul class="text-gray-600 mb-4">
                     <li><i class="fas fa-check text-primary mr-2"></i> Ideal for small households</li>
                     <li><i class="fas fa-check text-primary mr-2"></i> Portable and lightweight</li>
                     <li><i class="fas fa-check text-primary mr-2"></i> Perfect for camping trips</li>
                 </ul>
-                <a href="#" class="block text-center bg-primary text-white py-2 rounded-full hover:bg-orange-700 transition duration-300">
+                <button onclick="redirectToWhatsApp('3kg')" class="block w-full text-center bg-primary text-white py-2 rounded-full hover:bg-orange-700 transition duration-300">
                     Inquire Now
-                </a>
+                </button>
             </div>
 
             <!-- Cylinder Card 2 -->
             <div class="cylinder-card bg-white p-6 rounded-2xl shadow-lg">
-                <img src="./asset/image/6kg-removebg-preview.png?height=200&width=200" alt="6kg Gas Cylinder" class="w-full h-48 object-contain mb-4">
+                <img src="./asset/image/6kg-removebg-preview.png" alt="6kg Gas Cylinder" class="w-full h-48 object-contain mb-4">
                 <h3 class="text-xl font-semibold mb-2">6kg Gas Cylinder</h3>
                 <ul class="text-gray-600 mb-4">
                     <li><i class="fas fa-check text-primary mr-2"></i> Suitable for medium-sized families</li>
                     <li><i class="fas fa-check text-primary mr-2"></i> Balanced size and capacity</li>
                     <li><i class="fas fa-check text-primary mr-2"></i> Easy to handle and store</li>
                 </ul>
-                <a href="#" class="block text-center bg-primary text-white py-2 rounded-full hover:bg-orange-700 transition duration-300">
+                <button onclick="redirectToWhatsApp('6kg')" class="block w-full text-center bg-primary text-white py-2 rounded-full hover:bg-orange-700 transition duration-300">
                     Inquire Now
-                </a>
+                </button>
             </div>
 
             <!-- Cylinder Card 3 -->
             <div class="cylinder-card bg-white p-6 rounded-2xl shadow-lg">
-                <img src="./asset/image/12.5kg-removebg-preview.png?height=200&width=200" alt="12.5kg Gas Cylinder" class="w-full h-48 object-contain mb-4">
+                <img src="./asset/image/12.5kg-removebg-preview.png" alt="12.5kg Gas Cylinder" class="w-full h-48 object-contain mb-4">
                 <h3 class="text-xl font-semibold mb-2">12.5kg Gas Cylinder</h3>
                 <ul class="text-gray-600 mb-4">
                     <li><i class="fas fa-check text-primary mr-2"></i> Perfect for large families</li>
                     <li><i class="fas fa-check text-primary mr-2"></i> Ideal for frequent cooking</li>
                     <li><i class="fas fa-check text-primary mr-2"></i> Long-lasting supply</li>
                 </ul>
-                <a href="#" class="block text-center bg-primary text-white py-2 rounded-full hover:bg-orange-700 transition duration-300">
+                <button onclick="redirectToWhatsApp('12.5kg')" class="block w-full text-center bg-primary text-white py-2 rounded-full hover:bg-orange-700 transition duration-300">
                     Inquire Now
-                </a>
+                </button>
             </div>
         </div>
 
@@ -193,9 +256,9 @@ $userRole = $_SESSION['role'] ?? null; // Get user role if logged in
 
         <!-- Call to Action -->
         <div class="text-center mt-16">
-            <a href="#" class="bg-primary text-white px-8 py-3 rounded-full hover:bg-orange-700 inline-block text-lg font-semibold">
+            <button onclick="redirectToWhatsApp('Bulk Order')" class="bg-primary text-white px-8 py-3 rounded-full hover:bg-orange-700 inline-block text-lg font-semibold">
                 Contact Us for Bulk Orders
-            </a>
+            </button>
         </div>
     </main>
 
@@ -260,6 +323,13 @@ $userRole = $_SESSION['role'] ?? null; // Get user role if logged in
         </div>
     </footer>
 
+    <!-- Floating WhatsApp Button -->
+    <div class="whatsapp-float">
+        <div class="whatsapp-button bounce pulse" onclick="redirectToWhatsAppSupport()">
+            <i class="fab fa-whatsapp"></i>
+        </div>
+    </div>
+
     <script>
         // Mobile menu functionality
         const mobileMenu = document.querySelector('.mobile-menu');
@@ -280,6 +350,31 @@ $userRole = $_SESSION['role'] ?? null; // Get user role if logged in
                 mobileMenu.classList.remove('active');
             }
         });
+
+        // WhatsApp integration function for product inquiries
+        function redirectToWhatsApp(cylinderSize) {
+            // Replace with your actual WhatsApp number
+            const phoneNumber = "+2347018933739";
+            const message = `Hello, I'm interested in buying a ${cylinderSize} gas cylinder. Please provide more information.`;
+            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+        }
+        
+        // WhatsApp integration function for customer support
+        function redirectToWhatsAppSupport() {
+            // Replace with your actual WhatsApp support number (can be the same as above)
+            const phoneNumber = "+2347018933739";
+            const message = "Hello, I need assistance with JumandiGas products/services.";
+            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+        }
+        
+        // Stop bouncing animation after 10 seconds to avoid annoying the user
+        setTimeout(() => {
+            const whatsappButton = document.querySelector('.whatsapp-button');
+            whatsappButton.classList.remove('bounce');
+            // Keep the pulse animation for subtle attention
+        }, 10000);
     </script>
 </body>
 </html>
