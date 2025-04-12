@@ -91,7 +91,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
       )");
     }
     
-    // Build the query based on provided parameters
+    // First, check the structure of the riders table to find the correct column name
+    $riders_structure = $conn->query("DESCRIBE riders");
+    $order_id_column = "order_id"; // Default column name
+    
+    if ($riders_structure) {
+      while ($column = $riders_structure->fetch_assoc()) {
+        // Look for columns that might relate to order_id
+        if (strpos($column['Field'], 'order') !== false) {
+          $order_id_column = $column['Field'];
+          break;
+        }
+      }
+    }
+    
+    // Build the query based on provided parameters with the correct column name
     // Note: We're joining with users table for both vendor and rider information
     if ($tracking_id) {
       $query = "SELECT o.*, 
@@ -101,7 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
                 FROM orders o 
                 LEFT JOIN users v ON o.vendor_id = v.id 
                 LEFT JOIN users r ON o.rider_id = r.id
-                LEFT JOIN riders rd ON o.id = rd.order_id
+                LEFT JOIN riders rd ON r.id = rd.rider_id
                 WHERE o.tracking_id = ? AND o.user_id = ?";
       $params = [$tracking_id, $user_id];
       $types = "si";
@@ -113,7 +127,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
                 FROM orders o 
                 LEFT JOIN users v ON o.vendor_id = v.id 
                 LEFT JOIN users r ON o.rider_id = r.id
-                LEFT JOIN riders rd ON o.id = rd.order_id
+                LEFT JOIN riders rd ON r.id = rd.rider_id
                 WHERE o.id = ? AND o.user_id = ?";
       $params = [$order_id, $user_id];
       $types = "ii";
@@ -218,8 +232,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         // Add default location for rider if not exists
         if (!$order['rider_latitude'] || !$order['rider_longitude']) {
           // Check if there's already a rider entry
-          $rider_check = $conn->prepare("SELECT id FROM riders WHERE order_id = ?");
-          $rider_check->bind_param("i", $order['id']);
+          $rider_check = $conn->prepare("SELECT id FROM riders WHERE rider_id = ?");
+          $rider_check->bind_param("i", $rider['id']);
           $rider_check->execute();
           $rider_result = $rider_check->get_result();
           
@@ -227,8 +241,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
             // Insert new rider location
             $default_lat = 6.5244;
             $default_lng = 3.3792;
-            $insert_rider = $conn->prepare("INSERT INTO riders (vendor_id, order_id, user_id, rider_id, track_id, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?, ?)");
-            $insert_rider->bind_param("iiissdd", $order['vendor_id'], $order['id'], $order['user_id'], $rider['id'], $order['tracking_id'], $default_lat, $default_lng);
+            $insert_rider = $conn->prepare("INSERT INTO riders (vendor_id, track_id, user_id, rider_id, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?)");
+            $insert_rider->bind_param("issdd", $order['vendor_id'], $order['tracking_id'], $order['user_id'], $rider['id'], $default_lat, $default_lng);
             $insert_rider->execute();
             
             $order['rider_latitude'] = $default_lat;
@@ -299,4 +313,3 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 // Close the database connection
 $conn->close();
 ?>
-
