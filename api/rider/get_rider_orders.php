@@ -67,6 +67,7 @@ $result = $stmt->get_result();
 
 $orders = [];
 while ($row = $result->fetch_assoc()) {
+    $row['total_price'] = $row['total_price'] ?? 0.0; // Default to 0.0 if null
     $orders[] = $row;
 }
 
