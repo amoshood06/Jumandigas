@@ -8,11 +8,13 @@ header("Content-Type: application/json");
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
+
 // Database credentials
-$host = "localhost"; // Change to your database host
-$database = "jumandigas"; // Change to your database name
-$user = "root"; // Change to your database username
-$password = ""; // Change to your database password
+$host = "sdb-81.hosting.stackcp.net"; // Change to your database host
+$database = "jumandigas-353038374f79"; // Change to your database name
+$user = "jumandigas"; // Change to your database username
+$password = "ks2bs8a8ak"; // Change to your database password
+
 
 // Create database connection
 $conn = new mysqli($host, $user, $password, $database);
