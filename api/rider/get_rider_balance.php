@@ -49,8 +49,8 @@ if (!$user) {
 
 echo json_encode([
     "status" => "success",
-    "balance" => $user['balance'],
-    "currency" => $user['currency']
+    "balance" => $user['balance'] ?? 0.0, // Default to 0.0 if balance is null
+    "currency" => $user['currency'] ?? 'NGN'
 ]);
 
 $conn->close();
