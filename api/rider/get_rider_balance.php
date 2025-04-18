@@ -14,8 +14,6 @@ $database = "jumandigas-353038374f79"; // Change to your database name
 $user = "jumandigas"; // Change to your database username
 $password = "ks2bs8a8ak"; // Change to your database password
 
-
-
 // Create database connection
 $conn = new mysqli($host, $user, $password, $database);
 
@@ -47,10 +45,14 @@ if (!$user) {
     exit();
 }
 
+// Ensure balance is a valid number
+$balance = isset($user['balance']) && is_numeric($user['balance']) ? floatval($user['balance']) : 0.0;
+$currency = $user['currency'] ?? 'NGN';
+
 echo json_encode([
     "status" => "success",
-    "balance" => $user['balance'] ?? 0.0, // Default to 0.0 if balance is null
-    "currency" => $user['currency'] ?? 'NGN'
+    "balance" => $balance,
+    "currency" => $currency
 ]);
 
 $conn->close();
