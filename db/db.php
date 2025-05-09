@@ -1,9 +1,9 @@
 <?php
 // Database credentials
-$host = "sdb-81.hosting.stackcp.net"; // Change to your database host
-$dbname = "jumandigas-353038374f79"; // Change to your database name
-$username = "jumandigas"; // Change to your database username
-$password = "ks2bs8a8ak"; // Change to your database password
+$host = ""; // Change to your database host
+$dbname = "mfyokfmh_jumandigas"; // Change to your database name
+$username = "mfyokfmh_jumandigas"; // Change to your database username
+$password = "mfyokfmh_jumandigas"; // Change to your database password
 
 // $host = "localhost"; // Change to your database host
 // $dbname = "jumandigas"; // Change to your database name
